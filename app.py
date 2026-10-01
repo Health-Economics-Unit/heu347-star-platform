@@ -8,7 +8,6 @@ shiny run --reload app.py - run this in terminal to see the app
 http://127.0.0.1:8000/ this is the app link
 """
 
-
 from shiny import App, ui, render, reactive
 from modules.landingpage import landing_page        #landing_page is the variable in modules.landingpage
 from modules.decision import decision_page          #likewise for all the pages
