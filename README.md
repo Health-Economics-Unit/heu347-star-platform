@@ -33,8 +33,10 @@ The application is currently under active development.
 ## Repository Structure
 
 ```text
-core/           Core application logic
-modules/        Application pages and components
-calculations/   Analytical functions
-visuals/        Visual assets
-app.py          Main application entry point
+app.py          Main application entry point and application orchestration
+config/         Project specific settings for MCDA/STAR/HSE for now
+modules/        Application UI pages 
+components/     Reusable UI components
+core/           Shared logic and utilities
+calculations/   All calculations weighting, ranking etc
+visuals/        App logo, images etc

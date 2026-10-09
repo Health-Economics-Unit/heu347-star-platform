@@ -1,9 +1,11 @@
 from shiny import ui
+from modules.components import page_navigation
 
 options_page = ui.div(
 
      ui.h1("📋 Options"),
      ui.br(),
+     ui.h4("Options should be added after selecting the decision type on the previous page"),
      ui.p("Options should ideally be identified through discussion with key stakeholders during the decision making process. "
           "Define the options, interventions, services, or initiatives that will be assessed within the prioritisation model. "
           "Options should align with the objectives of the decision and be within the scope of the "
@@ -57,28 +59,14 @@ options_page = ui.div(
          )
      ),
 
-#--------------------Save and continue---------------------------------------------------------
+#--------------------Page navigation---------------------------------------------------------
 
-    ui.div(
-        ui.input_action_button(
-            "save_options",
-            "💾 Save options",
-            class_="btn-outline-primary",
-        ),
-
-        ui.input_action_button(
-            "save_continue_options",
-            "Save & Continue →",
-            class_="btn-primary",
-        ),
-
-        style="""
-            display:flex;
-            justify-content:flex-end;
-            gap:10px;
-            margin-bottom:20px;
-        """,
-    ),
-)
+    page_navigation(
+        previous_button_id="back_to_decision",
+        previous_label="Decision page",
+        save_button_id="save_options",
+        continue_button_id="save_continue_options"
+    )
+ )
 
 

@@ -1,3 +1,5 @@
+#This page will display outputs/results
+
 from shiny import ui
 
 results_page = ui.div(

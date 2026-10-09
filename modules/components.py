@@ -1,7 +1,8 @@
 #This page contains reusable UI components
 
 from shiny import ui
-from core.constants import app_name, app_subtitle, app_footername
+#from core.constants import app_name, app_subtitle, app_footername
+from config.active_project import project_name, project_subtitle, project_footername
 
 #-------------------------reusable application header-----------------------------------------------
 
@@ -20,8 +21,8 @@ def app_banner():
 
     return ui.card(
 
-        ui.h1(ui.strong(app_name)),
-        ui.h5(app_subtitle),
+        ui.h1(ui.strong(project_name)),
+        ui.h5(project_subtitle),
 
         style="""
             margin-top:20px;
@@ -80,13 +81,67 @@ def decision_card(button_id, title, description):
         class_="nav-card"
     )
 
+#-------------------------page navigations save, previous and continue---------------------------------------------------
+
+def page_navigation(
+    save_button_id,
+    continue_button_id,
+    previous_button_id=None,
+    previous_label=None
+):
+
+    left_section = []
+
+    if previous_button_id:
+
+        left_section.append(
+            ui.input_action_button(
+                previous_button_id,
+                f"← {previous_label}"
+            )
+        )
+
+    return ui.div(
+
+        ui.div(
+            *left_section
+        ),
+
+        ui.div(
+
+            ui.input_action_button(
+                save_button_id,
+                "💾 Save",
+                class_="btn-outline-primary",
+            ),
+
+            ui.input_action_button(
+                continue_button_id,
+                "Save & Continue →",
+                class_="btn-primary",
+            ),
+
+            style="""
+                display:flex;
+                gap:10px;
+            """
+        ),
+
+        style="""
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-top:20px;
+            margin-bottom:20px;
+        """
+    )
 #-------------------------reusable application footer-----------------------------------------------
 
 def app_footer():
 
     return ui.div(
 
-        app_footername,
+        project_footername,
 
         style="""
             margin-top:auto;

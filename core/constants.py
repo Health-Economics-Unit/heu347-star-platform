@@ -6,11 +6,11 @@
 # page names
 
 #--------------------------------------------------------------------------------------------------
-app_name = "Health Economics Unit's Prioritisation Platform"
+#app_name = "Health Economics Unit's Prioritisation Platform"
 #--------------------------------------------------------------------------------------------------
-app_subtitle = "Socio-Technical Allocation of Resource (STAR)"
+#app_subtitle = "Socio-Technical Allocation of Resource (STAR)"
 #--------------------------------------------------------------------------------------------------
-app_footername = "Health Economics Unit"
+#app_footername = "Health Economics Unit"
 #--------------------------------------------------------------------------------------------------
 pages = [
     "landing",

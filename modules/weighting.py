@@ -1,3 +1,5 @@
+#This page will collect weight inputs
+
 from shiny import ui
 
 weighting_page = ui.div(

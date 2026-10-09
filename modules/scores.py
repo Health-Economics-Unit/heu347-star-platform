@@ -1,3 +1,5 @@
+#This page will collect score inputs
+
 from shiny import ui
 
 scores_page = ui.div(
