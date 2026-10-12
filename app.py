@@ -17,6 +17,7 @@ from modules.scores import scores_page
 from modules.weighting import weighting_page
 from modules.results import results_page
 from modules.components import page_header,app_banner, app_footer
+from calculations.weights_calc import normalise_weights
 from core.themes import light_theme, dark_theme
 from uuid import uuid4
 
@@ -56,8 +57,8 @@ app_ui = ui.page_fluid(
             ui.nav_panel("decision", decision_page),
             ui.nav_panel("options", options_page),
             ui.nav_panel("criteria", criteria_page),
-            ui.nav_panel("scores", scores_page),
             ui.nav_panel("weighting", weighting_page),
+            ui.nav_panel("scores", scores_page),
             ui.nav_panel("results", results_page),
 
             id="main_nav"
@@ -156,13 +157,6 @@ def server(input, output, session):
             selected="criteria"
         )
 
-    @reactive.effect
-    @reactive.event(input.go_scores)
-    def goto_scores():
-        ui.update_navset(
-            "main_nav",
-            selected="scores"
-        )
 
     @reactive.effect
     @reactive.event(input.go_weighting)
@@ -171,6 +165,15 @@ def server(input, output, session):
             "main_nav",
             selected="weighting"
         )
+
+    @reactive.effect
+    @reactive.event(input.go_scores)
+    def goto_scores():
+        ui.update_navset(
+            "main_nav",
+            selected="scores"
+        )
+
 
     @reactive.effect
     @reactive.event(input.go_results)
@@ -187,8 +190,11 @@ def server(input, output, session):
 
     options_list = reactive.value([])               #stores all options added manually on the Options page
 
-    #criteria_context = reactive.value({})           #stores everything selected on Criteria's page
     criteria_list = reactive.value([])              #stores criteria added manually on criteria page
+
+    weights_state = reactive.value({})
+
+    scores_state = reactive.value({})
 
 
 #-------Validations------------------------------------------------------------------------------------------
@@ -225,13 +231,14 @@ def server(input, output, session):
 
         if len(criteria_list()) == 0:
             errors.append(
-                "At least one criteria must be added."
+                "At least one criteria must be added or selected."
             )
 
         return errors
 
-
-#---------Decision page logic--------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------------------
+#---------Decision page logic---------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------------------
 
     # Decision type selection
 
@@ -286,7 +293,7 @@ def server(input, output, session):
             """
         )
 
-#------------------Helper: build the decision record------------------------------------------
+#------------------captures the decision record------------------------------------------
 
     def build_decision_record():
 
@@ -344,25 +351,7 @@ def server(input, output, session):
             selected="options"
         )
 
-    # -----------Previous Decision page navigation--------------------
 
-    @reactive.effect
-    @reactive.event(input.back_to_decision)
-    def back_to_decision():
-        ui.update_navset(
-            "main_nav",
-            selected="decision"
-        )
-
-    # -----------Previous Options page navigation--------------------
-
-    @reactive.effect
-    @reactive.event(input.back_to_options)
-    def back_to_option():
-        ui.update_navset(
-            "main_nav",
-            selected="options"
-        )
 #--------------------------------------Options card----------------------------------------------------------------------
 #-----------Option type selection----------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------
@@ -383,7 +372,7 @@ def server(input, output, session):
 
         current_options = options_list().copy()
 
-        # Prevent duplicate option names-----------------------------------
+        # Prevent duplicate option names------------------------------------------------------------
         existing_names = [option["name"].lower()
             for option in current_options
         ]
@@ -413,7 +402,7 @@ def server(input, output, session):
             duration=2
         )
 
-    # Display options------------------------------
+    # Display options-----------------------------------------------------------------------------
 
     @render.ui
     def options_table():
@@ -452,7 +441,7 @@ def server(input, output, session):
             ]
         )
 
-    # delete button for options----------------------------------------------
+    # delete button for options---------------------------------------------------------
     @reactive.effect
     def delete_option():
         current_options = options_list()
@@ -486,7 +475,7 @@ def server(input, output, session):
 
                 break
 
-    # Save Options----------------------------------------------------------------
+    # Save Options---------------------------------------------------------------------------
 
     @reactive.effect
     @reactive.event(input.save_options)
@@ -541,8 +530,19 @@ def server(input, output, session):
             selected="criteria"
         )
 
+    #-----------Previous page navigation to decision page---------------------------
+
+    @reactive.effect
+    @reactive.event(input.back_to_decision)
+    def back_to_decision():
+        ui.update_navset(
+            "main_nav",
+            selected="decision"
+        )
+
+
 #--------------------------------------Criteria card----------------------------------------------------------------------
-#-----------Criteria selection----------------------------------------------------------------------------
+#-----------Criteria selection-------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------
 
 # Add criterion helper ------------------------------------------------------------------
@@ -726,6 +726,7 @@ def server(input, output, session):
         )
 
     #--------------------delete button for criteria-------------------------------------------------------
+
     @reactive.effect
     def delete_criteria():
         current_criteria = criteria_list()
@@ -785,7 +786,7 @@ def server(input, output, session):
         )
 
 
-    # Save Criteria and continue to Weighting page ----------------------------------
+    #--------------Save Criteria and continue to Weighting page ----------------------------------
 
     @reactive.effect
     @reactive.event(input.save_continue_criteria)
@@ -793,21 +794,562 @@ def server(input, output, session):
         errors = validate_criteria()
 
         if errors:
-            ui.notification_show("\n".join(errors),
-                                 type="error",
-                                 duration=3
-                                 )
+            ui.notification_show("\n".join(errors), type="error", duration=3)
 
             return
 
         print("Saved criteria:", criteria_list())
 
+        ui.notification_show("Criteria saved", type="message", duration=2)
+
+        ui.update_navset(
+            "main_nav",
+            selected="weighting"
+        )
+
+    # -----------Previous page navigation to options page---------------------------------------------------
+
+    @reactive.effect
+    @reactive.event(input.back_to_options)
+    def back_to_option():
+        ui.update_navset(
+            "main_nav",
+            selected="options"
+        )
+
+#--------------------------------------Weighting card--------------------------------------------------------
+#-----------Weights------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------
+
+    #Generate the controls from criteria_list
+
+    @render.ui
+    def weighting_controls():
+        current_criteria = criteria_list()
+        saved_weights = weights_state()
+
+        if not current_criteria:
+            return ui.div(
+
+                ui.p(
+                    "No criteria are available. Return to the Criteria "
+                    "page and select or add at least one criterion."
+                ),
+
+                class_="alert alert-warning"
+            )
+
+        return ui.div(
+            *[
+                ui.card(ui.h5(criterion["name"]),
+
+                    ui.layout_columns(
+
+                        ui.input_slider(
+                            f"weight_slider_{criterion['id']}","Weight", min=0, max=100,
+                            value=saved_weights.get(criterion["id"],{}).get("raw_weight",0),step=1,ticks=False
+                        ),
+
+                        ui.input_numeric(
+                            f"weight_number_{criterion['id']}","Enter value",
+                            value=saved_weights.get(criterion["id"],{}).get("raw_weight",0),
+                            min=0,max=100,step=1),col_widths=(9, 3)
+                    ),
+
+                    style="""
+                            margin-bottom:12px;
+                        """
+                )
+
+                for criterion in current_criteria
+            ]
+        )
+
+
+    #----------------Stores the most recently observed value for each criterion------------------------
+
+    last_weight_values = {}
+
+    @reactive.effect
+    def synchronise_weight_controls():
+        current_criteria = criteria_list()
+
+        for criterion in current_criteria:
+
+            criterion_id = criterion["id"]
+
+            slider_id = (
+                f"weight_slider_{criterion_id}"
+            )
+
+            number_id = (
+                f"weight_number_{criterion_id}"
+            )
+
+            try:
+                slider_value = input[slider_id]()
+                number_value = input[number_id]()
+
+            except KeyError:
+                continue
+
+            if slider_value is None or number_value is None:
+                continue
+
+            previous_value = last_weight_values.get(
+                criterion_id,
+                0
+            )
+
+        #------------Numeric box changed-------------------------------------------------------------
+
+            if number_value != previous_value:
+
+                corrected_value = max(
+                    0,
+                    min(100, int(number_value))
+                )
+
+                last_weight_values[criterion_id] = (
+                    corrected_value
+                )
+
+                ui.update_numeric(
+                    number_id,
+                    value=corrected_value
+                )
+
+                ui.update_slider(
+                    slider_id,
+                    value=corrected_value
+                )
+
+        #-----------Slider changed------------------------------------------------------------------
+
+            elif slider_value != previous_value:
+
+                corrected_value = max(0,min(100, int(slider_value)))
+
+                last_weight_values[criterion_id] = (corrected_value)
+
+                ui.update_numeric(number_id, value=corrected_value)
+
+    #-----------------------------------------------------------------------------------------------
+
+    def build_weights_record():
+        weights = {}
+
+        for criterion in criteria_list():
+
+            criterion_id = criterion["id"]
+
+            try:
+                weight = input[
+                    f"weight_number_{criterion_id}"
+                ]()
+
+            except KeyError:
+                weight = 0
+
+            if weight is None:
+                weight = 0
+
+            weights[criterion_id] = {
+                "criterion": criterion["name"],
+                "raw_weight": max(
+                    0,
+                    min(100, int(weight))
+                )
+            }
+
+        return weights
+
+#------------------Weights summary------------------------------------------------------------------
+
+    @render.ui
+    def weighting_summary():
+        current_criteria = criteria_list()
+
+        if not current_criteria:
+            return ui.p("No criteria selected yet.")
+
+        raw_weights = {}
+
+        for criterion in current_criteria:
+
+            criterion_id = criterion["id"]
+
+            try:
+                weight = input[f"weight_number_{criterion_id}"
+                ]()
+
+            except KeyError:
+                weight = 0
+
+            if weight is None:
+                weight = 0
+
+            raw_weights[criterion_id] = {"criterion": criterion["name"],
+                "raw_weight": weight
+            }
+
+        total_weight = sum(item["raw_weight"]
+            for item in raw_weights.values()
+        )
+
+        if total_weight == 0:
+            return ui.p("Adjust the weights to see the summary."
+            )
+
+        return ui.div(
+
+            ui.div(
+
+                ui.strong("Criterion"),
+                ui.strong("Raw Weight"),
+                ui.strong("Normalised Weight"),
+
+                style="""
+                        display:grid;
+                        grid-template-columns: 2fr 1fr 1fr;
+                        font-weight:bold;
+                        margin-bottom:10px;
+                    """
+            ),
+
+            *[
+
+                ui.div(
+
+                    ui.span(
+                        item["criterion"]
+                    ),
+
+                    ui.span(
+                        str(item["raw_weight"])
+                    ),
+
+                    ui.span(
+                        f"{item['raw_weight'] / total_weight:.1%}"
+                    ),
+
+                    style="""
+                            display:grid;
+                            grid-template-columns: 2fr 1fr 1fr;
+                            padding:8px 0;
+                            border-bottom:1px solid #eee;
+                        """
+                )
+
+                for item in raw_weights.values()
+
+            ],
+
+            ui.hr(),
+
+            ui.div(
+
+                ui.strong("Total"),
+
+                ui.strong(
+                    str(total_weight)
+                ),
+
+                ui.strong("100%"),
+
+                style="""
+                        display:grid;
+                        grid-template-columns: 2fr 1fr 1fr;
+                    """
+            )
+        )
+
+#-----------------Save Weights---------------------------------------------------------------------
+
+    @reactive.effect
+    @reactive.event(input.save_weights)
+    def save_weights():
+        weights = {}
+
+        for criterion in criteria_list():
+
+            criterion_id = criterion["id"]
+
+            weight = input[f"weight_number_{criterion_id}"
+            ]()
+
+            if weight is None:
+                weight = 0
+
+            weights[criterion_id] = {
+
+                "criterion": criterion["name"],
+
+                "raw_weight": max(0,min(100, int(weight))
+                )
+            }
+
+        normalised = normalise_weights(weights)
+        print("Weighting Summary:")
+        for item in normalised.values():
+            print(
+                f"{item['criterion']}: "
+                f"Raw={item['raw_weight']}, "
+                f"Normalised={item['normalised_weight']:.1%}"
+            )
+
+
+        ui.notification_show("Weights saved", type="message", duration=3)
+
+#-----------------Save weights and continue---------------------------------------------------------------------
+
+    @reactive.effect
+    @reactive.event(input.save_continue_weights)
+    def save_continue_weights():
+        weights = {}
+
+        for criterion in criteria_list():
+
+            criterion_id = criterion["id"]
+
+            weight = input[f"weight_number_{criterion_id}"
+            ]()
+
+            if weight is None:
+                weight = 0
+
+            weights[criterion_id] = {
+
+                "criterion": criterion["name"],
+
+                "raw_weight": max(0,min(100, int(weight))
+                )
+            }
+
+        normalised = normalise_weights(weights)
+        print("Weighting Summary:")
+        for item in normalised.values():
+            print(
+                f"{item['criterion']}: "
+                f"Raw={item['raw_weight']}, "
+                f"Normalised={item['normalised_weight']:.1%}"
+            )
+
+        ui.notification_show("Weights saved", type="message", duration=3)
+
+
+        ui.update_navset(
+            "main_nav",
+            selected="scores"
+        )
+
+#-----------Previous page navigation to criteria page-------------------------------------------------------
+
+    @reactive.effect
+    @reactive.event(input.back_to_criteria)
+    def back_to_criteria():
+        ui.update_navset(
+            "main_nav",
+            selected="criteria"
+        )
+
+#-----------------------------------------------------------------------------------------------------------
+#--------------------------------------Scores card----------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------
+    @render.ui
+    def scores_matrix():
+
+        current_options = options_list()
+        current_criteria = criteria_list()
+
+        if not current_options or not current_criteria:
+
+            return ui.p(
+                "Add options and criteria before scoring."
+            )
+
+        matrix_rows = []
+
+        # Header row
+        matrix_rows.append(
+
+            ui.div(
+
+                ui.div(
+                    ui.strong("Option")
+                ),
+
+                *[
+                    ui.div(
+                        ui.strong(
+                            criterion["name"]
+                        )
+                    )
+
+                    for criterion in current_criteria
+                ],
+
+                style="""
+                    display:grid;
+                    grid-template-columns:repeat(
+                        %s,1fr
+                    );
+                    gap:10px;
+                    font-weight:bold;
+                    margin-bottom:10px;
+                """ % (len(current_criteria) + 1)
+            )
+        )
+
+        # Option rows
+        for option in current_options:
+
+            matrix_rows.append(
+
+                ui.div(
+
+                    ui.div(
+                        option["name"]
+                    ),
+
+                    *[
+
+                        ui.input_numeric(
+
+                            f"score_"
+                            f"{option['id']}_"
+                            f"{criterion['id']}",
+
+                            None,
+
+                            value=0,
+
+                            min=0,
+
+                            max=100,
+
+                            step=1
+
+                        )
+
+                        for criterion
+                        in current_criteria
+
+                    ],
+
+                    style="""
+                        display:grid;
+                        grid-template-columns:repeat(
+                            %s,1fr
+                        );
+                        gap:10px;
+                        margin-bottom:10px;
+                    """ % (len(current_criteria) + 1)
+                )
+            )
+
+        return ui.div(*matrix_rows)
+
+#-----------Collect scores from the matrix-------------------------------------------------------------------
+
+    def build_scores_record():
+
+        scores = {}
+
+        for option in options_list():
+
+            option_id = option["id"]
+
+            scores[option_id] = {
+                "option": option["name"],
+                "criteria_scores": {}
+            }
+
+            for criterion in criteria_list():
+                criterion_id = criterion["id"]
+
+                try:
+                    score = input[
+                        f"score_{option_id}_{criterion_id}"
+                    ]()
+
+                except KeyError:
+
+                    score = 0
+
+                if score is None: score = 0
+
+                scores[option_id][
+                    "criteria_scores"
+                ][criterion_id] = {
+
+                    "criterion": criterion["name"],
+
+                    "score": max(
+                        0,
+                        min(100, int(score))
+                    )
+                }
+
+        return scores
+
+#-----------Save scores-------------------------------------------------------------------------------------
+
+    @reactive.effect
+    @reactive.event(input.save_scores)
+    def save_scores():
+        scores = build_scores_record()
+
+        scores_state.set(scores)
+
+        print("\nScores Summary:")
+
+        for option in scores.values():
+
+            print(
+                f"\n{option['option']}"
+            )
+
+            for item in option[
+                "criteria_scores"
+            ].values():
+                print(
+                    f"{item['criterion']}: "
+                    f"{item['score']}"
+                )
+
         ui.notification_show(
-            "Criteria saved",
+            "Scores saved",
+            type="message",
+            duration=3
+        )
+
+#-----------Save scores and continue------------------------------------------------------------------------
+
+    @reactive.effect
+    @reactive.event(input.save_continue_scores)
+    def save_continue_scores():
+
+        scores = build_scores_record()
+
+        scores_state.set(scores)
+
+        ui.notification_show(
+            "Scores saved",
             type="message",
             duration=2
         )
 
+        ui.update_navset(
+            "main_nav",
+            selected="results"
+        )
+
+#-----------Previous page navigation to weighting page-------------------------------------------------------
+
+    @reactive.effect
+    @reactive.event(input.back_to_weighting)
+    def back_to_weights():
         ui.update_navset(
             "main_nav",
             selected="weighting"

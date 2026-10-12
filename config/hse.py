@@ -1,11 +1,11 @@
 # This page contains fixed values for the HSE project:
 
 #--------------------------------------------------------------------------------------------------
-project_name = "HSE's Prioritisation Platform"
+project_name = "The Health and Safety Executive's Prioritisation Platform"
 #--------------------------------------------------------------------------------------------------
-project_subtitle = "Socio-Technical Allocation of Resource (STAR)"
+project_subtitle = "Multi-Criteria Decision Analysis (MCDA)"
 #--------------------------------------------------------------------------------------------------
-project_footername = "HSE"
+project_footername = "The Health and Safety Executive (HSE)"
 #--------------------------------------------------------------------------------------------------
 
 pages = [
