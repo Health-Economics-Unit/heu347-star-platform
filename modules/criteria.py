@@ -4,7 +4,7 @@ from modules.components import page_navigation
 criteria_page = ui.div(
 
      ui.br(),
-     ui.h1("📌 Criteria"),
+     ui.h1("📌 Criteria", class_="page-title"),
      ui.br(),
      ui.p(
          "Criteria are the measurable factors used to evaluate and compare options. "
@@ -17,10 +17,11 @@ criteria_page = ui.div(
          "not be included as a criterion as they are considered separately within "
          "the prioritisation process."
      ),
-    ui.h6(ui.strong("Note: The criteria below are examples only and are not exhaustive. "
-                    "Please select or add criteria that are relevant to your decision")),
+    ui.h6(ui.strong("ℹ️ Note: The criteria below are examples only and are not exhaustive. "
+                    "Please select or add criteria that are relevant to your decision",
+                    class_="page-title")),
 
-    #----------------Suggested criteria------------------------------------------------------------
+    #----------------Suggested criteria--------------------------------------------------------------------
 
     ui.card(
 
@@ -64,7 +65,7 @@ criteria_page = ui.div(
                 class_="criterion-card"
             ),
 
-            col_widths=(3, 3, 3, 3, 3, 3, 3)
+            col_widths=(3, 3, 3, 3, 3)
         )
     ),
 

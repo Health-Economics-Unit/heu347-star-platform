@@ -1,12 +1,15 @@
 #This page will display outputs/results
 
 from shiny import ui
+from config.active_project import chart_colours
+
+
 
 results_page = ui.div(
 
     ui.br(),
 
-    ui.h1("Results"),
+    ui.h1("Results", class_="page-title"),
 
     ui.br(),
 
@@ -23,8 +26,9 @@ results_page = ui.div(
     ),
 
     ui.strong(
-        "Note: Results will only appear once options, criteria, "
-        "weights and scores have been completed."
+        "ℹ️ Note: Results will only appear once options, criteria, "
+        "weights and scores have been completed.",
+        class_="page-title"
     ),
 
     ui.br(),
@@ -65,16 +69,16 @@ results_page = ui.div(
      ui.card(
 
          ui.card_header("Results Summary"),
-
-         ui.output_ui("results_summary")
+         ui.output_ui("results_summary"),
+         class_="hse-card"
 
      ),
 
     ui.card(
 
         ui.card_header("Decision Matrix"),
-
-        ui.output_ui("decision_matrix")
+        ui.output_ui("decision_matrix"),
+        class_="hse-card"
 
     ),
 
@@ -84,12 +88,29 @@ results_page = ui.div(
 
         ui.card_header("Visualisation"),
          ui.p("Each coloured segment represents the weighted contribution "
-              "of a criterion to the overall benefit score."
+              "of a criterion to the overall benefit score. Larger bars "
+              "indicate options with higher total benefit scores."
          ),
+        ui.output_plot("results_chart", height="600px"),
+        class_="page-card"
 
+    ),
 
-        ui.output_plot("results_chart")
+#----------------Download button--------------------------------------------------------------
 
+    ui.div(
+        ui.download_button(
+
+        "download_report",
+        "📄 Download PDF Report",
+        class_="download-button"
+        ),
+
+        style="""
+                display:flex;
+                justify-content:flex-end;
+                margin-top:20px;
+                margin-bottom:20px;
+            """
     )
-
 )

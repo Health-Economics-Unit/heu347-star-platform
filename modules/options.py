@@ -3,7 +3,7 @@ from modules.components import page_navigation
 
 options_page = ui.div(
 
-     ui.h1("📋 Options"),
+     ui.h1("📋 Options", class_="page-title"),
      ui.br(),
      ui.h4("Options should be added after selecting the decision type on the previous page"),
      ui.p("Options should ideally be identified through discussion with key stakeholders during the decision making process. "
@@ -26,15 +26,20 @@ options_page = ui.div(
          ui.input_action_button(
              "add_option",
              "➕ Add Option",
-              class_="btn-outline-primary",
-         )
+              #class_="btn-outline-primary",
+             class_="btn-primary"
+         ),
+
+        class_="page-card"
      ),
 #----------------Current selected options----------------------------------------------
      ui.card(
 
          ui.card_header("Current Options"),
 
-         ui.output_ui("options_table")
+         ui.output_ui("options_table"),
+
+        class_="page-card"
      ),
 
 #----------------Key considerations----------------------------------------------------
@@ -56,7 +61,8 @@ options_page = ui.div(
              ui.tags.li(
                  "Keep the number of options manageable to support meaningful discussion and comparison."
              )
-         )
+         ),
+            class_="page-card"
      ),
 
 #--------------------Page navigation---------------------------------------------------------

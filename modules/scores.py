@@ -5,7 +5,7 @@ from modules.components import page_navigation
 
 scores_page = ui.div(
     ui.br(),
-    ui.h1("Scores"),
+    ui.h1("Scores", class_="page-title"),
     ui.br(),
      ui.p(
           "Score each option against each criterion using a scale from "
@@ -27,9 +27,10 @@ scores_page = ui.div(
      ),
 
      ui.strong(
-          "Note: The scoring matrix is generated automatically from the "
+          "ℹ️ Note: The scoring matrix is generated automatically from the "
           "Options and Criteria pages. The matrix will only appear once "
-          "at least one option and one criterion have been added."
+          "at least one option and one criterion have been added.",
+        class_="page-title"
      ),
 
     #------scores matrix-----------------------------------------------------------------------

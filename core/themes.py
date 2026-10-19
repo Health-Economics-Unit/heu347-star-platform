@@ -60,3 +60,4 @@ body.dark-mode .nav-card:hover {
     border-color: #59C0E9;
 }
 """
+

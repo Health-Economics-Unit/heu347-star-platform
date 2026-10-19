@@ -1,8 +1,18 @@
 #This page contains reusable UI components
+# page header,
+# app banner,
+# def nav_card(...)
+# def decision_card(...)
+# def page_navigation(save + save&continue + previous)
+# app footer,
+
 
 from shiny import ui
-#from core.constants import app_name, app_subtitle, app_footername
-from config.active_project import project_name, project_subtitle, project_footername
+from config.active_project import project_name, project_subtitle, project_footername, project_logo
+
+CARD_CLASS = "project-card"
+
+#------------------------------------------------------------------------------------------------
 
 #-------------------------reusable application header-----------------------------------------------
 
@@ -17,20 +27,46 @@ def page_header():
     )
 #-------------------------reusable application title-----------------------------------------------
 
+# def app_banner():
+#
+#     return ui.card(
+#
+#         ui.img(src = project_logo),
+#
+#         ui.h1(ui.strong(project_name),
+#             class_="project-title"
+#             ),
+#
+#         ui.h3(project_subtitle,
+#               class_="project-subtitle"
+#             ),
+#
+#         class_="project-banner"
+#
+#     )
+
 def app_banner():
 
     return ui.card(
 
-        ui.h1(ui.strong(project_name)),
-        ui.h5(project_subtitle),
+        ui.img(
+            src=project_logo,
+            class_="banner-logo"
+        ),
 
-        style="""
-            margin-top:20px;
-            padding:25px;
-            text-align:center;
-        """
+        ui.h1(
+            ui.strong(project_name),
+            class_="project-title"
+        ),
+
+        ui.h3(
+            project_subtitle,
+            class_="project-subtitle"
+        ),
+
+        class_="project-banner"
+
     )
-
 #-------------------------reusable navigation cards for landing page--------------------------------
 
 def nav_card(button_id, title, description):
@@ -52,7 +88,7 @@ def nav_card(button_id, title, description):
 
             ui.h4(title), ui.p(description),
 
-            class_="nav-card"
+            class_= CARD_CLASS
 
         )
 #-------------------------reusable cards for decision page-----------------------------------------
@@ -78,7 +114,7 @@ def decision_card(button_id, title, description):
 
         ui.h4(title), ui.p(description),
 
-        class_="nav-card"
+        class_= CARD_CLASS
     )
 
 #-------------------------page navigations save, previous and continue---------------------------------------------------
@@ -111,13 +147,13 @@ def page_navigation(
 
             ui.input_action_button(
                 save_button_id,
-                "💾 Save",
+                "💾 Save",                       #save button
                 class_="btn-outline-primary",
             ),
 
             ui.input_action_button(
                 continue_button_id,
-                "Save & Continue →",
+                "Save & Continue →",            #save & continue button
                 class_="btn-primary",
             ),
 

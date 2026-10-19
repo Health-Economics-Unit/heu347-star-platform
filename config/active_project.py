@@ -1,18 +1,18 @@
 # This page contains values for the active project:
 
-active_project = "mcda"
+ACTIVE_PROJECT = "hse"
 
 #--------------------------------------------------------------------------------------------------
-if active_project == "hse":
+if ACTIVE_PROJECT == "hse":
     from config.hse import *
 
-elif active_project == "mcda":
+elif ACTIVE_PROJECT == "mcda":
     from config.mcda import *
 
-elif active_project == "star":
+elif ACTIVE_PROJECT == "star":
     from config.star import *
 
 else:
     raise ValueError(
-        f"Unknown project configuration: {active_project}"
+        f"Unknown project configuration: {ACTIVE_PROJECT}"
     )

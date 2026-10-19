@@ -17,16 +17,21 @@ from modules.scores import scores_page
 from modules.weighting import weighting_page
 from modules.results import results_page
 from modules.components import page_header,app_banner, app_footer
-from calculations.weights_calc import normalise_weights
-from core.themes import light_theme, dark_theme
 from uuid import uuid4
+from calculations.weights_calc import normalise_weights
+from calculations.results_calc import calculate_results
+from core.themes import light_theme, dark_theme
+from config.active_project import *
+from pathlib import Path
+from core.charts import create_results_chart
+from core.validators import (validate_decision, validate_options, validate_criteria)
 
 #------------------------------------------------------------------------------------------------
 
 app_ui = ui.page_fluid(
 
     ui.div(
-        ui.tags.style(light_theme + dark_theme),
+        ui.tags.style(light_theme + dark_theme + theme_css),
         ui.tags.script("""
             Shiny.addCustomMessageHandler(
                 "theme_toggle",
@@ -44,11 +49,11 @@ app_ui = ui.page_fluid(
             );
         """),
 
-#------------------------------------------------------------------------------------------------
-        page_header(),                                                  #header for all pages
-#------------------------------------------------------------------------------------------------
-        app_banner(),                                                   #title for all pages
-#------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------------------------
+        page_header(),                                                  #header for all pages is in components file
+#-------------------------------------------------------------------------------------------------------------------
+        app_banner(),                                                   #title for projects
+#-------------------------------------------------------------------------------------------------------------------
     #navigation cards
 
         ui.div(
@@ -183,6 +188,7 @@ def server(input, output, session):
             selected="results"
         )
 
+
 #-----Application state & validation-------------------------------------------------------------------------------------
 
     decision_context = reactive.value({})           #stores everything selected on Decision page
@@ -196,51 +202,18 @@ def server(input, output, session):
 
     scores_state = reactive.value({})
 
-
-#-------Validations------------------------------------------------------------------------------------------
-
-    def validate_decision():
-
-        errors = []
-
-        # if not input.decision_title().strip():
-        #     errors.append("Decision title is required.")
-
-        if not input.decision_description().strip():
-            errors.append("Decision description is required.")
-
-        if decision_type_state() is None:
-            errors.append("A decision type must be selected.")
-
-        return errors
-
-
-    def validate_options():
-        errors = []
-
-        if len(options_list()) == 0:
-            errors.append(
-                "At least one option must be added."
-            )
-
-        return errors
-
-
-    def validate_criteria():
-        errors = []
-
-        if len(criteria_list()) == 0:
-            errors.append(
-                "At least one criteria must be added or selected."
-            )
-
-        return errors
-
 #-------------------------------------------------------------------------------------------------------------
 #---------Decision page logic---------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------------------------------------
 
     # Decision type selection
+
+    @reactive.effect
+    @reactive.event(input.program_prioritisation)
+    def select_program_prioritisation():
+        decision_type_state.set(
+            "Program Prioritisation"
+        )
 
     @reactive.effect
     @reactive.event(input.resource_allocation)
@@ -256,18 +229,18 @@ def server(input, output, session):
             "Priority Setting"
         )
 
-    # @reactive.effect
-    # @reactive.event(input.clinical_decision_making)
-    # def select_workforce_planning():
-    #     decision_type_state.set(
-    #         "Clinical Decision Making"
-    #     )
+    @reactive.effect
+    @reactive.event(input.service_configuration)
+    def select_service_configuration():
+        decision_type_state.set(
+            "Service Configuration"
+        )
 
     @reactive.effect
-    @reactive.event(input.other_decision)
-    def select_other_decision():
+    @reactive.event(input.operational_prioritisation)
+    def select_operational_prioritisation():
         decision_type_state.set(
-            "Other"
+            "Operational Prioritisation"
         )
 
     #-----------------Display selected decision type-------------------------------------------
@@ -293,7 +266,7 @@ def server(input, output, session):
             """
         )
 
-#------------------captures the decision record------------------------------------------
+#------------------captures the decision record-----------------------------------------------
 
     def build_decision_record():
 
@@ -309,7 +282,8 @@ def server(input, output, session):
     @reactive.event(input.save_decision)
     def save_decision():
 
-        errors = validate_decision()
+        errors = validate_decision(input.decision_description(), decision_type_state())
+
         if errors:
             ui.notification_show("\n".join(errors), type="error", duration=3)
             return
@@ -323,13 +297,14 @@ def server(input, output, session):
             duration=3
         )
 
-    # Save Decision and continue to Options page---------------------------------------------------------
+    # Save Decision and continue to Options page-------------------------------------------------
 
     @reactive.effect
     @reactive.event(input.save_continue_decision)
     def save_continue_decision():
 
-        errors = validate_decision()
+        errors = validate_decision(input.decision_description(), decision_type_state())
+
         if errors:
             ui.notification_show("\n".join(errors), type="error", duration=3)
             return
@@ -352,7 +327,7 @@ def server(input, output, session):
         )
 
 
-#--------------------------------------Options card----------------------------------------------------------------------
+#--------------------------------------Options card----------------------------------------------------------
 #-----------Option type selection----------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------
 
@@ -442,6 +417,7 @@ def server(input, output, session):
         )
 
     # delete button for options---------------------------------------------------------
+
     @reactive.effect
     def delete_option():
         current_options = options_list()
@@ -481,7 +457,7 @@ def server(input, output, session):
     @reactive.event(input.save_options)
     def save_options():
 
-        errors = validate_options()
+        errors = validate_options(options_list())
 
         if errors:
             ui.notification_show(
@@ -500,13 +476,14 @@ def server(input, output, session):
             duration=3
         )
 
+
     # Save Options and continue to Criteria page ---------------------------------------
 
     @reactive.effect
     @reactive.event(input.save_continue_options)
     def save_continue_options():
 
-        errors = validate_options()
+        errors = validate_options(options_list())
 
         if errors:
 
@@ -541,7 +518,7 @@ def server(input, output, session):
         )
 
 
-#--------------------------------------Criteria card----------------------------------------------------------------------
+#--------------------------------------Criteria card---------------------------------------------------------
 #-----------Criteria selection-------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------
 
@@ -725,7 +702,7 @@ def server(input, output, session):
             ]
         )
 
-    #--------------------delete button for criteria-------------------------------------------------------
+#--------------------delete button for criteria-------------------------------------------------------
 
     @reactive.effect
     def delete_criteria():
@@ -761,12 +738,13 @@ def server(input, output, session):
                 break
 
 
-    #---------------Save Criteria--------------------------------------------------------------------
+#---------------Save Criteria--------------------------------------------------------------------
 
     @reactive.effect
     @reactive.event(input.save_criteria)
     def save_criteria():
-        errors = validate_criteria()
+
+        errors = validate_criteria(criteria_list())
 
         if errors:
             ui.notification_show(
@@ -791,7 +769,8 @@ def server(input, output, session):
     @reactive.effect
     @reactive.event(input.save_continue_criteria)
     def save_continue_criteria():
-        errors = validate_criteria()
+
+        errors = validate_criteria(criteria_list())
 
         if errors:
             ui.notification_show("\n".join(errors), type="error", duration=3)
@@ -816,6 +795,7 @@ def server(input, output, session):
             "main_nav",
             selected="options"
         )
+
 
 #--------------------------------------Weighting card--------------------------------------------------------
 #-----------Weights------------------------------------------------------------------------------------------
@@ -866,7 +846,7 @@ def server(input, output, session):
         )
 
 
-    #----------------Stores the most recently observed value for each criterion------------------------
+#----------------Stores the most recently observed value for each criterion------------------------
 
     last_weight_values = {}
 
@@ -901,7 +881,7 @@ def server(input, output, session):
                 0
             )
 
-        #------------Numeric box changed-------------------------------------------------------------
+#------------Numeric box changed-------------------------------------------------------------
 
             if number_value != previous_value:
 
@@ -924,7 +904,7 @@ def server(input, output, session):
                     value=corrected_value
                 )
 
-        #-----------Slider changed------------------------------------------------------------------
+#-----------Slider changed------------------------------------------------------------------
 
             elif slider_value != previous_value:
 
@@ -934,7 +914,7 @@ def server(input, output, session):
 
                 ui.update_numeric(number_id, value=corrected_value)
 
-    #-----------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------
 
     def build_weights_record():
         weights = {}
@@ -1006,7 +986,7 @@ def server(input, output, session):
             ui.div(
 
                 ui.strong("Criterion"),
-                ui.strong("Raw Weight"),
+                ui.strong("Swing Weight"),
                 ui.strong("Normalised Weight"),
 
                 style="""
@@ -1090,6 +1070,8 @@ def server(input, output, session):
             }
 
         normalised = normalise_weights(weights)
+        weights_state.set(normalised)
+
         print("Weighting Summary:")
         for item in normalised.values():
             print(
@@ -1127,6 +1109,8 @@ def server(input, output, session):
             }
 
         normalised = normalise_weights(weights)
+        weights_state.set(normalised)       #saving the normalised weight
+
         print("Weighting Summary:")
         for item in normalised.values():
             print(
@@ -1170,7 +1154,7 @@ def server(input, output, session):
 
         matrix_rows = []
 
-        # Header row
+        # Header row-------------------------------------------
         matrix_rows.append(
 
             ui.div(
@@ -1201,7 +1185,7 @@ def server(input, output, session):
             )
         )
 
-        # Option rows
+        # Option rows-------------------------------------------
         for option in current_options:
 
             matrix_rows.append(
@@ -1297,6 +1281,7 @@ def server(input, output, session):
 
     @reactive.effect
     @reactive.event(input.save_scores)
+
     def save_scores():
         scores = build_scores_record()
 
@@ -1356,5 +1341,168 @@ def server(input, output, session):
         )
 
 
+# -----------------------------------------------------------------------------------------------------------
+# --------------------------------------Results card----------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------
+    def get_results():
+
+        scores = scores_state()
+
+        weights = weights_state()
+
+        if not scores or not weights: return []
+
+        return calculate_results(scores,weights)
+
+#------ Results summary --------------------------------------------------------------------------------------
+
+    @render.ui
+    def results_summary():
+
+        results = get_results()
+
+        if not results:
+
+            return ui.p(
+                "No results available."
+            )
+
+        top_option = results[0]
+
+        return ui.div(
+
+            ui.h4(ui.strong("Most Preferred Option")),
+
+            ui.p(
+                top_option["option"]
+            ),
+
+            ui.p(
+                f"Benefit Score: "
+                f"{top_option['benefit_score']}"
+            ),
+
+            ui.p(
+                f"Rank: "
+                f"{top_option['rank']}"
+            )
+        )
+
+#------ Decision Matrix --------------------------------------------------------------------------------------
+
+    @render.ui
+    def decision_matrix():
+
+        results = get_results()
+
+        if not results:
+
+            return ui.p(
+                "No results available. Complete the Options, Criteria, "
+                "Weighting and Scores pages first."
+            )
+
+        # Get criterion names from the first result
+        criteria_names = list(
+            results[0]["weighted_scores"].keys()
+        )
+
+        matrix_rows = []
+
+        # Header row
+        matrix_rows.append(
+
+            ui.div(
+
+                ui.div(ui.strong("Option")),
+
+                *[
+                    ui.div(
+                        ui.strong(name)
+                    )
+                    for name in criteria_names
+                ],
+
+                ui.div(
+                    ui.strong("Benefit Score")
+                ),
+
+                ui.div(
+                    ui.strong("Rank")
+                ),
+
+                style=f"""
+                    display:grid;
+                    grid-template-columns:
+                        repeat({len(criteria_names) + 3}, 1fr);
+                    gap:10px;
+                    padding:10px;
+                    font-weight:bold;
+                    border-bottom:2px solid #ddd;
+                    margin-bottom:10px;
+                """
+            )
+        )
+
+        # Data rows
+        for result in results:
+
+            matrix_rows.append(
+
+                ui.div(
+
+                    ui.div(
+                        result["option"]
+                    ),
+
+                    *[
+                        ui.div(
+                            f"{score:.2f}"
+                        )
+
+                        for score in result[
+                            "weighted_scores"
+                        ].values()
+                    ],
+
+                    ui.div(
+                        f"{result['benefit_score']:.2f}"
+                    ),
+
+                    ui.div(
+                        str(result["rank"])
+                    ),
+
+                    style=f"""
+                        display:grid;
+                        grid-template-columns:
+                            repeat({len(criteria_names) + 3}, 1fr);
+                        gap:10px;
+                        padding:10px;
+                        border-bottom:1px solid #eee;
+                    """
+                )
+            )
+
+        return ui.div(
+
+            *matrix_rows
+
+        )
+
+#--------Chart visualisation---------------------------------------------------------------------
+
+    @render.plot
+    def results_chart():
+
+        results = get_results()
+
+        print(results)
+
+        return create_results_chart(
+            results,
+            chart_colours
+        )
+
 #------------------------------------------------------------------------------------------------------------
-app = App(app_ui, server)
+app = App(app_ui, server, static_assets=Path(__file__).parent / "assets")

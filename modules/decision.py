@@ -3,7 +3,7 @@ from modules.components import decision_card, page_navigation
 
 decision_page = ui.div(
 
-     ui.h2("🎯 Decision"),
+     ui.h2("🎯 Decision", class_="page-title"),
      ui.br(),
      ui.p(
           "Define the decision context before building your prioritisation model. Consider the problem you are trying to address, "
@@ -12,7 +12,9 @@ decision_page = ui.div(
           "require different evidence, criteria, and stakeholder input. Select the decision type that best "
           "reflects your scenario from the options below. If none are suitable, select 'Other'. "
           "The categories are based on common applications of MCDA reported in the literature "
-          "(Gongora-Salazar et al., 2023)."
+          "(Gongora-Salazar et al., 2023).",
+
+    #class_="page-title"
      ),
 
 #-------------------Decision overview---------------------------------------------------------
@@ -38,10 +40,14 @@ decision_page = ui.div(
                     "Provide a brief description of the decision "
                     "that needs to be made."
                 )
+
             ),
 
-            col_widths=(3, 9)
-        )
+            col_widths=(3, 9),
+            class_="card-header"
+        ),
+
+        class_="page-card"
     ),
 
 
@@ -58,33 +64,41 @@ decision_page = ui.div(
 
         ui.layout_columns(
 
+          decision_card(
+                "program_prioritisation",
+                "📋 Program Prioritisation",
+                "Evaluate programmes and initiatives to identify those that best support strategic objectives."
+            ),
+
             decision_card(
                 "resource_allocation",
                 "💰 Resource Allocation",
-                "Allocate resources across options within a fixed budget."
+                "Allocate limited resources across competing priorities and areas of investment."
             ),
 
             decision_card(
                 "priority_setting",
                 "⚖️ Priority Setting",
-                "Rank options based on value and impact."
+                "Rank options based on value, impact, risk and organisational priorities."
             ),
 
-        #     decision_card(
-        #         "clinical_decision_making",
-        #         "🩺 Clinical Decision Making",
-        #         "Compare clinical options and support treatment or care pathway decisions."
-        #     ),
-        #
-        #
             decision_card(
-                "other_decision",
-                "🧩 Other",
-                "Define a custom decision context.",
+                "service_configuration",
+                "🏗️ Service Configuration",
+                "Compare alternative service delivery models and implementation approaches."
+            ),
+
+
+            decision_card(
+                "operational_prioritisation",
+                "⚙️ Operational Prioritisation",
+                "Prioritise operational improvements, interventions and activities to maximise organisational performance.",
             )
         ),
 
         ui.output_ui("selected_decision_type"),
+
+        class_="page-card"
     ),
 
     ui.br(),
