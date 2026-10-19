@@ -27,24 +27,6 @@ def page_header():
     )
 #-------------------------reusable application title-----------------------------------------------
 
-# def app_banner():
-#
-#     return ui.card(
-#
-#         ui.img(src = project_logo),
-#
-#         ui.h1(ui.strong(project_name),
-#             class_="project-title"
-#             ),
-#
-#         ui.h3(project_subtitle,
-#               class_="project-subtitle"
-#             ),
-#
-#         class_="project-banner"
-#
-#     )
-
 def app_banner():
 
     return ui.card(
@@ -171,7 +153,35 @@ def page_navigation(
             margin-bottom:20px;
         """
     )
-#-------------------------reusable application footer-----------------------------------------------
+#-------------------------reusable cards for results page-----------------------------------------------
+
+def results_nav_card(card_id, icon, title):
+
+    return ui.input_action_button(
+
+        card_id,
+
+        ui.div(
+
+            ui.div(
+                icon,
+                style="font-size:2rem;"
+            ),
+
+            ui.p(
+                title,
+                style="""
+                    margin-top:10px;
+                    font-weight:600;
+                """
+            ),
+
+        ),
+
+        class_="results-nav-card"
+    )
+
+#-------------------------reusable application footer---------------------------------------------------
 
 def app_footer():
 

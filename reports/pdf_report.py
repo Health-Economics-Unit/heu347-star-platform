@@ -122,7 +122,7 @@ def generate_pdf_report(
     # Cover page
     # ------------------------------------------------------------------
 
-    logo_path = Path(project_root) / "www" / project_logo
+    logo_path = Path(project_root) / "assets" / project_logo
 
     if logo_path.exists():
 
@@ -360,7 +360,7 @@ def generate_pdf_report(
     story.append(
         Paragraph(
             (
-                "The raw swing weights represent the relative importance "
+                "The weights represent the relative importance "
                 "assigned to each criterion. The normalised weights are "
                 "expressed as percentages and sum to 100%."
             ),
@@ -371,7 +371,7 @@ def generate_pdf_report(
     weight_data = [
         [
             Paragraph("<b>Criterion</b>", body_style),
-            Paragraph("<b>Raw weight</b>", body_style),
+            Paragraph("<b>Weight</b>", body_style),
             Paragraph("<b>Normalised weight</b>", body_style)
         ]
     ]
@@ -609,7 +609,6 @@ def generate_pdf_report(
                             f"<b>{top_option['option']}</b><br/>"
                             f"Benefit score: "
                             f"{top_option['benefit_score']:.2f}<br/>"
-                            f"Rank: {top_option['rank']}"
                         ),
                         note_style
                     )

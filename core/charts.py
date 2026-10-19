@@ -89,6 +89,7 @@ def create_results_chart(results, chart_colours):
         "Contribution of Criteria to Overall Benefit Score",
         fontsize=14,
         fontweight="bold",
+        color="#1F4E99",
         pad=20
     )
 

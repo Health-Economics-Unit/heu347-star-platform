@@ -1,9 +1,7 @@
 #This page will display outputs/results
 
 from shiny import ui
-from config.active_project import chart_colours
-
-
+from modules.components import results_nav_card
 
 results_page = ui.div(
 
@@ -82,8 +80,6 @@ results_page = ui.div(
 
     ),
 
-    ui.br(),
-
     ui.card(
 
         ui.card_header("Visualisation"),
@@ -91,18 +87,55 @@ results_page = ui.div(
               "of a criterion to the overall benefit score. Larger bars "
               "indicate options with higher total benefit scores."
          ),
+
         ui.output_plot("results_chart", height="600px"),
-        class_="page-card"
+        class_="hse-card"
 
     ),
 
-#----------------Download button--------------------------------------------------------------
+#----------------Need to make changes section---------------------------------------------------------
+
+    ui.card(
+
+        ui.card_header("Need to make changes?"),
+
+        ui.p(
+            "Return to any stage and update your inputs."
+        ),
+
+        ui.layout_columns(
+
+            results_nav_card(
+                "edit_options","📋", "Options"
+            ),
+
+            results_nav_card(
+                "edit_criteria","📌", "Criteria"
+            ),
+
+            results_nav_card(
+                "edit_weighting","🎚️", "Weighting"
+            ),
+
+            results_nav_card(
+                "edit_scores","📝", "Scores"
+            ),
+
+            col_widths=(1,1,1,1),
+            gap="10px"
+
+        ),
+
+        class_="hse-card"
+    ),
+
+#----------------Download button----------------------------------------------------------------------
 
     ui.div(
         ui.download_button(
 
         "download_report",
-        "📄 Download PDF Report",
+        "📄 Download Results Report",
         class_="download-button"
         ),
 
@@ -113,4 +146,5 @@ results_page = ui.div(
                 margin-bottom:20px;
             """
     )
+
 )

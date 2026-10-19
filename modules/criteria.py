@@ -47,12 +47,6 @@ criteria_page = ui.div(
                 class_="criterion-card"
             ),
 
-            # ui.input_action_button(
-            #     "add_feasibility",
-            #     "✅ Feasibility",
-            #     class_="criterion-card"
-            # ),
-
             ui.input_action_button(
                 "add_patient_experience",
                 "😊 Patient Experience",
@@ -61,7 +55,7 @@ criteria_page = ui.div(
 
             ui.input_action_button(
                 "add_cost",
-                "💷 Cost (For MCDA only)",
+                "💷 Cost",
                 class_="criterion-card"
             ),
 

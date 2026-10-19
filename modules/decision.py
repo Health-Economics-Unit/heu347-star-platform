@@ -29,7 +29,7 @@ decision_page = ui.div(
                 "decision_title",
                 "Decision title ",
                 rows=6,
-                placeholder="Cancer Service Prioritisation 2027/28"
+                placeholder="Resource Allocation or Priority Setting"
             ),
 
             ui.input_text_area(
@@ -37,8 +37,8 @@ decision_page = ui.div(
                 "Decision description/objectives *",
                 rows=6,
                 placeholder=(
-                    "Provide a brief description of the decision "
-                    "that needs to be made."
+                    "Describe the decision that needs to be made and the objectives it should achieve. "
+                    "For example, allocating resources across services or prioritising investment options."
                 )
 
             ),
@@ -65,35 +65,19 @@ decision_page = ui.div(
         ui.layout_columns(
 
           decision_card(
-                "program_prioritisation",
-                "📋 Program Prioritisation",
-                "Evaluate programmes and initiatives to identify those that best support strategic objectives."
+                "star_mcda",
+                "⭐ STAR - MCDA",
+                "Structured prioritisation combining STAR and MCDA to compare options, "
+                "assess trade-offs and support transparent resource allocation decisions."
             ),
 
             decision_card(
-                "resource_allocation",
-                "💰 Resource Allocation",
-                "Allocate limited resources across competing priorities and areas of investment."
-            ),
-
-            decision_card(
-                "priority_setting",
-                "⚖️ Priority Setting",
-                "Rank options based on value, impact, risk and organisational priorities."
-            ),
-
-            decision_card(
-                "service_configuration",
-                "🏗️ Service Configuration",
-                "Compare alternative service delivery models and implementation approaches."
-            ),
-
-
-            decision_card(
-                "operational_prioritisation",
-                "⚙️ Operational Prioritisation",
-                "Prioritise operational improvements, interventions and activities to maximise organisational performance.",
+                "mcda",
+                "📊 MCDA",
+                "Multi-Criteria Decision Analysis for evaluating and "
+                "ranking options against weighted criteria to support evidence-based decision making."
             )
+
         ),
 
         ui.output_ui("selected_decision_type"),

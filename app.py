@@ -23,6 +23,8 @@ from calculations.results_calc import calculate_results
 from core.themes import light_theme, dark_theme
 from config.active_project import *
 from pathlib import Path
+from datetime import datetime
+from reports.pdf_report import generate_pdf_report
 from core.charts import create_results_chart
 from core.validators import (validate_decision, validate_options, validate_criteria)
 
@@ -209,38 +211,17 @@ def server(input, output, session):
     # Decision type selection
 
     @reactive.effect
-    @reactive.event(input.program_prioritisation)
-    def select_program_prioritisation():
+    @reactive.event(input.star_mcda)
+    def select_star_mcda():
         decision_type_state.set(
-            "Program Prioritisation"
+            "STAR - MCDA"
         )
 
     @reactive.effect
-    @reactive.event(input.resource_allocation)
-    def select_resource_allocation():
+    @reactive.event(input.mcda)
+    def select_mcda():
         decision_type_state.set(
-            "Resource Allocation"
-        )
-
-    @reactive.effect
-    @reactive.event(input.priority_setting)
-    def select_priority_setting():
-        decision_type_state.set(
-            "Priority Setting"
-        )
-
-    @reactive.effect
-    @reactive.event(input.service_configuration)
-    def select_service_configuration():
-        decision_type_state.set(
-            "Service Configuration"
-        )
-
-    @reactive.effect
-    @reactive.event(input.operational_prioritisation)
-    def select_operational_prioritisation():
-        decision_type_state.set(
-            "Operational Prioritisation"
+            "MCDA"
         )
 
     #-----------------Display selected decision type-------------------------------------------
@@ -986,7 +967,7 @@ def server(input, output, session):
             ui.div(
 
                 ui.strong("Criterion"),
-                ui.strong("Swing Weight"),
+                ui.strong("Weight"),
                 ui.strong("Normalised Weight"),
 
                 style="""
@@ -1380,12 +1361,8 @@ def server(input, output, session):
             ui.p(
                 f"Benefit Score: "
                 f"{top_option['benefit_score']}"
-            ),
-
-            ui.p(
-                f"Rank: "
-                f"{top_option['rank']}"
             )
+
         )
 
 #------ Decision Matrix --------------------------------------------------------------------------------------
@@ -1503,6 +1480,143 @@ def server(input, output, session):
             results,
             chart_colours
         )
+
+#--------Navigation---------------------------------------------------------------------
+
+    @reactive.effect
+    @reactive.event(input.edit_decision)
+    def edit_decision():
+        ui.update_navset(
+            "main_nav",
+            selected="decision"
+        )
+
+    @reactive.effect
+    @reactive.event(input.edit_options)
+    def edit_options():
+        ui.update_navset(
+            "main_nav",
+            selected="options"
+        )
+
+    @reactive.effect
+    @reactive.event(input.edit_criteria)
+    def edit_criteria():
+        ui.update_navset(
+            "main_nav",
+            selected="criteria"
+        )
+
+    @reactive.effect
+    @reactive.event(input.edit_weighting)
+    def edit_weighting():
+        ui.update_navset(
+            "main_nav",
+            selected="weighting"
+        )
+
+    @reactive.effect
+    @reactive.event(input.edit_scores)
+    def edit_scores():
+        ui.update_navset(
+            "main_nav",
+            selected="scores"
+        )
+
+#--------Download PDF report---------------------------------------------------------------------
+
+    @render.download(
+        filename=lambda: (
+                f"prioritisation_report_"
+                f"{datetime.now():%Y%m%d_%H%M}.pdf"
+        ),
+        media_type="application/pdf"
+    )
+    def download_report():
+        decision = decision_context()
+        options = options_list()
+        criteria = criteria_list()
+        weights = weights_state()
+        scores = scores_state()
+        results = get_results()
+
+        if not decision:
+            ui.notification_show(
+                "Complete and save the decision page before downloading the report.",
+                type="error",
+                duration=3
+            )
+
+            return
+
+        if not options:
+            ui.notification_show(
+                "Add and save at least one option before downloading the report.",
+                type="error",
+                duration=3
+            )
+
+            return
+
+        if not criteria:
+            ui.notification_show(
+                "Select and save at least one criterion before downloading the report.",
+                type="error",
+                duration=3
+            )
+
+            return
+
+        if not weights:
+            ui.notification_show(
+                "Save the criterion weights before downloading the report.",
+                type="error",
+                duration=3
+            )
+
+            return
+
+        if not scores:
+            ui.notification_show(
+                "Save the option scores before downloading the report.",
+                type="error",
+                duration=3
+            )
+
+            return
+
+        if not results:
+            ui.notification_show(
+                "No calculated results are available for the report.",
+                type="error",
+                duration=3
+            )
+
+            return
+
+        pdf_buffer = generate_pdf_report(
+            project_name=project_name,
+            project_subtitle=project_subtitle,
+            project_footername=project_footername,
+            project_logo=project_logo,
+            project_colour=palette["primary"],
+            chart_colours=chart_colours,
+            decision=decision,
+            options=options,
+            criteria=criteria,
+            weights=weights,
+            scores=scores,
+            results=results,
+            project_root=Path(__file__).parent
+        )
+
+        ui.notification_show(
+            "✅ Report downloaded successfully.",
+            type="message",
+            duration=3
+        )
+
+        yield pdf_buffer.getvalue()
 
 #------------------------------------------------------------------------------------------------------------
 app = App(app_ui, server, static_assets=Path(__file__).parent / "assets")

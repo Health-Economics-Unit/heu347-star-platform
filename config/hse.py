@@ -3,11 +3,11 @@
 #---------------------------------------------------------------------------------------------------------------------
 #----------------------Project specific branding-------------------------------------------------------------------------------
 
-project_name = "The Health and Safety Executive's Prioritisation Platform"
+project_name = "Health Service Executive's Prioritisation Platform"
 #--------------------------------------------------------------------------------------------------
 project_subtitle = "MCDA - Multi-Criteria Decision Analysis"
 #--------------------------------------------------------------------------------------------------
-project_footername = "The Health and Safety Executive (HSE)"
+project_footername = "Health Service Executive (HSE)"
 #--------------------------------------------------------------------------------------------------
 project_logo = "hse_logo_white.png"
 
@@ -101,11 +101,11 @@ chart_colours = [
 #-------------------------Chart colors--------------------------------------------------------------------------------
 
 chart_colours = [
-    "#00685A",  # Primary HSE green
-    "#2A8B77",
-    "#5FA59B",
-    "#89B4AE",
-    "#BFD7D3"
+
+    "#2FA6A8",   # Teal
+    "#F0A52B",   # Mustard
+    "#E47B2C",   # Orange
+    "#1F4E99"    # HSE blue
 ]
 
 #-------------------------HSE CSS theme-----------------------------------------------------------------------------------
@@ -133,33 +133,34 @@ select,
 
 .project-banner {
 
-    background-color: #00685A;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-    min-height: 280px;
-    padding: 40px 50px;
     position: relative;
+    background-color: #00685A;
+    min-height: 420px;
+    padding: 80px;
+    margin-top: 20px;
+    margin-bottom: 40px;
+    border: none;
+    border-radius: 40px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.10);
+    overflow: hidden;
     text-align: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+        
 }
-
 
 .project-banner img {
     position: absolute;
     top: 25px;
     left: 35px;
-    height: 110px;
+    height: 120px;
     width: auto;
 }
 
 .project-title {
 
     color: #FFFFFF;
-    font-weight: 700;
-    margin: 0;
+    font-size: 3.5rem;
+    font-weight: 500;
+    margin-bottom: 15px;
     padding-top: 15px;
 }
 
@@ -283,6 +284,35 @@ select,
     color: white !important;
     width: auto !important;
     display: inline-block !important;
+}
+
+/*--------------------Results page navigation cards--------------------------------------------------------------------------------*/
+
+.results-nav-card {
+
+    background-color: #FFFFFF;
+    border: 2px solid #C9DEDA;
+    border-radius: 15px;
+    padding: 25px;
+    font-size: 0.95rem;
+    text-align: center;
+    width: 140px;
+    min-height: 80px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.results-nav-card:hover {
+
+    background-color: #F3F5F4;
+    border-color: #00685A;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.results-nav-card .card-icon {
+
+    font-size: 1.4rem;
 }
 
 """
