@@ -26,11 +26,11 @@ scores_page = ui.div(
           "relative to these anchor points."
      ),
 
-     ui.strong(
+     ui.h6(ui.strong(
           "ℹ️ Note: The scoring matrix is generated automatically from the "
           "Options and Criteria pages. The matrix will only appear once "
-          "at least one option and one criterion have been added.",
-        class_="page-title"
+          "at least one option and one criterion have been added."),
+        class_="note-text"
      ),
 
     #------scores matrix-----------------------------------------------------------------------

@@ -68,7 +68,7 @@ def nav_card(button_id, title, description):
                 """
             ),
 
-            ui.h4(title), ui.p(description),
+            ui.h4(title, class_="card-title"), ui.p(description, class_="card-description"),
 
             class_= CARD_CLASS
 

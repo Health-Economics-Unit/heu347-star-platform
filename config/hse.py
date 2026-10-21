@@ -1,5 +1,7 @@
 # This page contains fixed values for the HSE project like project details, landing page details, color palette, chart_colors, theme_css :
 
+from core.themes import project_theme_css
+
 #---------------------------------------------------------------------------------------------------------------------
 #----------------------Project specific branding-------------------------------------------------------------------------------
 
@@ -81,7 +83,7 @@ navigation_cards = [
 #------------------------Color palette-------------------------------------------------------------------------------
 
 palette = {
-    "primary": "#00685A",    #main hse teal - use for banner, navigation active state, primary buttons, cards and charts
+    "primary": "#005A4F",    #main hse teal - use for banner, navigation active state, primary buttons, cards and charts
     "secondary": "#89B4AE",  #sage green - use for landing page backgrounds, information cards etc
     "accent": "#BFD7D3",     #light teal for borders, hover etc
     "background": "#F3F5F4", #page background, info panels etc
@@ -90,13 +92,8 @@ palette = {
     "white": "#FFFFFF"
 }
 
-chart_colours = [
-    "#0D6B5A",
-    "#2A8B77",
-    "#5FA59B",
-    "#89B4AE",
-    "#BFD7D3"
-]
+theme_css = project_theme_css(palette)
+
 
 #-------------------------Chart colors--------------------------------------------------------------------------------
 
@@ -107,212 +104,3 @@ chart_colours = [
     "#E47B2C",   # Orange
     "#1F4E99"    # HSE blue
 ]
-
-#-------------------------HSE CSS theme-----------------------------------------------------------------------------------
-
-theme_css = """
-
-/* --------------------Page------------------------------- */
-
-body,
-button,
-input,
-textarea,
-select,
-.card,
-.card-header {
-
-    background-color: #F3F5F4;
-    font-family: Arial, sans-serif;
-    color: #00685A;
-    text-align: justify;
-}
-
-
-/*-------------------Banner used for project name + project subtitle + logo--------------------------------*/
-
-.project-banner {
-
-    position: relative;
-    background-color: #00685A;
-    min-height: 420px;
-    padding: 80px;
-    margin-top: 20px;
-    margin-bottom: 40px;
-    border: none;
-    border-radius: 40px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.10);
-    overflow: hidden;
-    text-align: center;
-        
-}
-
-.project-banner img {
-    position: absolute;
-    top: 25px;
-    left: 35px;
-    height: 120px;
-    width: auto;
-}
-
-.project-title {
-
-    color: #FFFFFF;
-    font-size: 3.5rem;
-    font-weight: 500;
-    margin-bottom: 15px;
-    padding-top: 15px;
-}
-
-.project-subtitle {
-
-    color: #FFFFFF;
-    font-weight: 500;
-    margin-top: 15px;
-    margin-bottom: 0;
-}
-
-/*-------------------section heading used for introduction + how to use this app--------------------------------*/
-
-.section-heading {
-
-    color: #0D6B5A;
-    font-weight: 700;
-    margin-bottom: 10px;
-}
-
-/*-------------project-card used for navigation cards + Decision cards-------------------------------------------*/
-
-.project-card {
-
-    position: relative;
-    background-color: #FFFFFF;
-    border: 2px solid #C9DEDA;
-    border-radius: 20px;
-    color: #00685A;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-    transition: all 0.2s ease;
-    cursor: pointer;
-    margin-bottom: 20px;
-    min-height: 180px;
-    padding: 20px;
-}
-
-.project-card:hover {
-
-    transform: translateY(-2px);
-    border-color: #0D6B5A;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
-
-/*-----Info card manages the information card on the landing page-------------*/
-
-.info-card {
-
-    background-color: #FFFFFF;
-    border: 2px solid #C9DEDA;
-    border-radius: 20px;
-    color: #00685A;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-    margin-bottom: 20px;
-    padding: 20px;
-}
-
-/*---------------Theme for all other pages now except the landing page(it has its own theme on top)----------*/
-
-.page-title {
-
-    color: #00685A;
-    font-weight: 700;
-}
-
-.card-header {
-
-    color: #00685A;
-    font-weight: 600;
-    background-color: #FFFFFF;
-}
-
-.page-card {
-
-    background-color: #FFFFFF;
-    border: 2px solid #C9DEDA;
-    border-radius: 20px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-    padding: 20px;
-    margin-bottom: 20px;
-}
-
-/*----------------Criteria Cards----------------------------------------------------------------------------*/
-
-.criterion-card {
-
-    background-color: #FFFFFF;
-    border: 2px solid #C9DEDA;
-    border-radius: 15px;
-    color: #0D6B5A;
-    font-weight: 600;
-    transition: all 0.2s ease;
-}
-
-.criterion-card:hover {
-
-    background-color: #F3F5F4;
-    border-color: #0D6B5A;
-}
-
-
-/*--------------------Buttons--------------------------------------------------------------------------------*/
-
-.btn-primary {
-
-    background-color: #00685A;
-    border-color: #00685A;
-    color: #FFFFFF;
-}
-
-.btn-primary:hover {
-
-    background-color: #2A8B77;
-    border-color: #2A8B77;
-}
-
-.download-button {
-
-    background-color: #0D6B5A !important;
-    border-color: #0D6B5A !important;
-    color: white !important;
-    width: auto !important;
-    display: inline-block !important;
-}
-
-/*--------------------Results page navigation cards--------------------------------------------------------------------------------*/
-
-.results-nav-card {
-
-    background-color: #FFFFFF;
-    border: 2px solid #C9DEDA;
-    border-radius: 15px;
-    padding: 25px;
-    font-size: 0.95rem;
-    text-align: center;
-    width: 140px;
-    min-height: 80px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.results-nav-card:hover {
-
-    background-color: #F3F5F4;
-    border-color: #00685A;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-}
-
-.results-nav-card .card-icon {
-
-    font-size: 1.4rem;
-}
-
-"""

@@ -31,7 +31,8 @@ weighting_page = ui.div(
             "Both controls will remain synchronised."
         ),
 
-        ui.h6(ui.strong("ℹ️ Note: If all criteria are considered equally important, assign the same weight (i.e. 100) to each criteria.")),
+        ui.h6(ui.strong("ℹ️ Note: If all criteria are considered equally important, assign the same weight (i.e. 100) to each criteria."),
+              class_="note-text"),
 
         ui.output_ui("weighting_controls")
      ),

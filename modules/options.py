@@ -5,7 +5,7 @@ options_page = ui.div(
 
      ui.h1("📋 Options", class_="page-title"),
      ui.br(),
-     ui.h4("Options should be added after selecting the decision type on the previous page"),
+     ui.h5("Options should be added after selecting the decision type on the previous page"),
      ui.p("Options should ideally be identified through discussion with key stakeholders during the decision making process. "
           "Define the options, interventions, services, or initiatives that will be assessed within the prioritisation model. "
           "Options should align with the objectives of the decision and be within the scope of the "

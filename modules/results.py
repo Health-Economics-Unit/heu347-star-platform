@@ -23,10 +23,10 @@ results_page = ui.div(
         "results to support discussion and decision-making."
     ),
 
-    ui.strong(
+    ui.h6(ui.strong(
         "ℹ️ Note: Results will only appear once options, criteria, "
-        "weights and scores have been completed.",
-        class_="page-title"
+        "weights and scores have been completed."),
+        class_="note-text"
     ),
 
     ui.br(),

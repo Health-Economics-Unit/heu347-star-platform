@@ -1594,6 +1594,13 @@ def server(input, output, session):
 
             return
 
+
+        ui.notification_show(
+            "✅ Generating report....",
+            type="message",
+            duration=3
+        )
+
         pdf_buffer = generate_pdf_report(
             project_name=project_name,
             project_subtitle=project_subtitle,
@@ -1610,11 +1617,6 @@ def server(input, output, session):
             project_root=Path(__file__).parent
         )
 
-        ui.notification_show(
-            "✅ Report downloaded successfully.",
-            type="message",
-            duration=3
-        )
 
         yield pdf_buffer.getvalue()
 

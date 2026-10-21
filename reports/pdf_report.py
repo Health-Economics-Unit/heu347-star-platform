@@ -3,21 +3,13 @@ from pathlib import Path
 from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
+import textwrap
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import mm
-from reportlab.platypus import (
-    SimpleDocTemplate,
-    Paragraph,
-    Spacer,
-    PageBreak,
-    Table,
-    TableStyle,
-    Image,
-    KeepTogether
-)
+from reportlab.platypus import (SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle, Image, KeepTogether)
 
 
 def generate_pdf_report(
@@ -104,6 +96,14 @@ def generate_pdf_report(
         spaceAfter=6
     )
 
+    table_header_style = ParagraphStyle(
+        "TableHeader",
+        parent=body_style,
+        fontName="Helvetica-Bold",
+        textColor=colors.white,
+        alignment=TA_CENTER
+    )
+
     note_style = ParagraphStyle(
         "NoteStyle",
         parent=body_style,
@@ -118,9 +118,11 @@ def generate_pdf_report(
 
     story = []
 
-    # ------------------------------------------------------------------
-    # Cover page
-    # ------------------------------------------------------------------
+
+    #-----------------------------------------------------------------------------------------------
+    # Cover page------------------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------
+
 
     logo_path = Path(project_root) / "assets" / project_logo
 
@@ -177,9 +179,10 @@ def generate_pdf_report(
 
     story.append(PageBreak())
 
-    # ------------------------------------------------------------------
-    # 1. Decision context
-    # ------------------------------------------------------------------
+    #-----------------------------------------------------------------------------------------------
+    # 1. Decision context --------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------
+
 
     story.append(
         Paragraph(
@@ -205,8 +208,8 @@ def generate_pdf_report(
 
     decision_data = [
         [
-            Paragraph("<b>Field</b>", body_style),
-            Paragraph("<b>Client response</b>", body_style)
+            Paragraph("<b>Field</b>", table_header_style),
+            Paragraph("<b>Client response</b>", table_header_style)
         ],
         [
             Paragraph("Decision title", body_style),
@@ -236,9 +239,9 @@ def generate_pdf_report(
     story.append(decision_table)
     story.append(Spacer(1, 8 * mm))
 
-    # ------------------------------------------------------------------
-    # 2. Options
-    # ------------------------------------------------------------------
+    #------------------------------------------------------------------------------------------------
+    # 2. Options------------------------------------------------------------------------------------------------
+    #-----------------------------------------------------------------------------------------------
 
     story.append(
         Paragraph(
@@ -251,7 +254,7 @@ def generate_pdf_report(
 
         option_data = [
             [
-                Paragraph("<b>Option</b>", body_style)
+                Paragraph("<b>Option</b>", table_header_style)
             ]
         ]
 
@@ -291,9 +294,9 @@ def generate_pdf_report(
 
     story.append(Spacer(1, 8 * mm))
 
-    # ------------------------------------------------------------------
-    # 3. Criteria
-    # ------------------------------------------------------------------
+    #------------------------------------------------------------------------------------------------
+    # 3. Criteria------------------------------------------------------------------------------------------------
+    #----------------------------------------------------------------------------------------------------
 
     story.append(
         Paragraph(
@@ -306,7 +309,7 @@ def generate_pdf_report(
 
         criteria_data = [
             [
-                Paragraph("<b>Criterion</b>", body_style)
+                Paragraph("<b>Criterion</b>", table_header_style)
             ]
         ]
 
@@ -346,9 +349,9 @@ def generate_pdf_report(
 
     story.append(PageBreak())
 
-    # ------------------------------------------------------------------
-    # 4. Weighting
-    # ------------------------------------------------------------------
+    #------------------------------------------------------------------------------------------------------
+    # 4. Weighting------------------------------------------------------------------------------------------------------
+    #------------------------------------------------------------------------------------------------------
 
     story.append(
         Paragraph(
@@ -370,9 +373,9 @@ def generate_pdf_report(
 
     weight_data = [
         [
-            Paragraph("<b>Criterion</b>", body_style),
-            Paragraph("<b>Weight</b>", body_style),
-            Paragraph("<b>Normalised weight</b>", body_style)
+            Paragraph("<b>Criterion</b>", table_header_style),
+            Paragraph("<b>Weight</b>", table_header_style),
+            Paragraph("<b>Normalised weight</b>", table_header_style)
         ]
     ]
 
@@ -420,9 +423,9 @@ def generate_pdf_report(
     story.append(weight_table)
     story.append(Spacer(1, 8 * mm))
 
-    # ------------------------------------------------------------------
-    # 5. Scores matrix
-    # ------------------------------------------------------------------
+    #------------------------------------------------------------------------------------------------------
+    # 5. Scores matrix ------------------------------------------------------------------------------------------------------
+    #------------------------------------------------------------------------------------------------------
 
     story.append(
         Paragraph(
@@ -442,13 +445,13 @@ def generate_pdf_report(
     }
 
     scores_header = [
-        Paragraph("<b>Option</b>", body_style)
+        Paragraph("<b>Option</b>", table_header_style)
     ]
 
     scores_header.extend(
         Paragraph(
             f"<b>{criterion_names[criterion_id]}</b>",
-            body_style
+            table_header_style
         )
         for criterion_id in criterion_ids
     )
@@ -502,9 +505,9 @@ def generate_pdf_report(
     story.append(scores_table)
     story.append(PageBreak())
 
-    # ------------------------------------------------------------------
-    # 6. Decision matrix
-    # ------------------------------------------------------------------
+    #------------------------------------------------------------------------------------------------------
+    # 6. Decision matrix ----------------------------------------------------------------------------------------------
+    #------------------------------------------------------------------------------------------------------
 
     story.append(
         Paragraph(
@@ -520,21 +523,21 @@ def generate_pdf_report(
         )
 
         results_header = [
-            Paragraph("<b>Option</b>", body_style)
+            Paragraph("<b>Option</b>", table_header_style)
         ]
 
         results_header.extend(
             Paragraph(
                 f"<b>{criterion}</b>",
-                body_style
+                table_header_style
             )
             for criterion in result_criteria
         )
 
         results_header.extend(
             [
-                Paragraph("<b>Benefit score</b>", body_style),
-                Paragraph("<b>Rank</b>", body_style)
+                Paragraph("<b>Benefit score</b>", table_header_style),
+                Paragraph("<b>Rank</b>", table_header_style)
             ]
         )
 
@@ -591,9 +594,9 @@ def generate_pdf_report(
         story.append(results_table)
         story.append(Spacer(1, 8 * mm))
 
-        # ------------------------------------------------------------------
-        # 7. Preferred option
-        # ------------------------------------------------------------------
+        #------------------------------------------------------------------------------------------------------
+        # 7. Preferred option----------------------------------------------------------------------------------
+        #------------------------------------------------------------------------------------------------------
 
         top_option = results[0]
 
@@ -618,9 +621,9 @@ def generate_pdf_report(
 
         story.append(PageBreak())
 
-        # ------------------------------------------------------------------
-        # 8. Visualisation
-        # ------------------------------------------------------------------
+        #------------------------------------------------------------------------------------------------------
+        # 8. Visualisation-------------------------------------------------------------------------------------
+        #------------------------------------------------------------------------------------------------------
 
         story.append(
             Paragraph(
@@ -654,9 +657,9 @@ def generate_pdf_report(
             )
         )
 
-    # ------------------------------------------------------------------
-    # Generate PDF
-    # ------------------------------------------------------------------
+    #------------------------------------------------------------------------------------------------------
+    # Generate PDF----------------------------------------------------------------------------------------
+    #------------------------------------------------------------------------------------------------------
 
     document.build(
         story,
@@ -749,6 +752,7 @@ def apply_standard_table_style(
         )
     )
 
+#---------------------------Chart on the pdf report-------------------------------
 
 def create_results_chart(
     results,
@@ -767,6 +771,11 @@ def create_results_chart(
         for result in results
     ]
 
+    wrapped_option_names = [
+        "\n".join(textwrap.wrap(name, width=18))
+        for name in option_names
+    ]
+
     positions = np.arange(
         len(option_names)
     )
@@ -776,7 +785,7 @@ def create_results_chart(
     )
 
     fig, ax = plt.subplots(
-        figsize=(10.5, 5.2)
+        figsize=(12, 5.5)
     )
 
     for index, criterion_name in enumerate(
@@ -830,7 +839,7 @@ def create_results_chart(
     ax.set_ylabel("Weighted score")
 
     ax.set_xticks(positions)
-    ax.set_xticklabels(option_names)
+    ax.set_xticklabels(wrapped_option_names, fontsize=10)
 
     ax.legend(
         title="Criteria",
@@ -851,6 +860,7 @@ def create_results_chart(
     ax.set_axisbelow(True)
 
     fig.tight_layout()
+    plt.subplots_adjust(bottom=0.25)
 
     fig.savefig(
         chart_buffer,

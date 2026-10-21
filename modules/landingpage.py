@@ -20,9 +20,11 @@ ui.card(
         style="text-align:justify;"
     ),
 
+    #class_="info-card"
+
 #------How to use the application-------------------------------------------------------------------------------------------
 
-    ui.h6(
+    ui.h5(
         ui.strong(how_to_title),
         class_="section-heading"
     ),
@@ -45,9 +47,7 @@ ui.card(
 
 #------Note-----------------------------------------------------------------------------------------------------------------
 
-ui.h6(
-    ui.h6(ui.strong((note_text))),
-),
+    ui.h6(ui.strong(note_text), class_="note-text"),
 
 ui.br(),
 

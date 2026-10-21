@@ -44,7 +44,7 @@ decision_page = ui.div(
             ),
 
             col_widths=(3, 9),
-            class_="card-header"
+            #class_="card-header"       #to make the title and description heading green
         ),
 
         class_="page-card"

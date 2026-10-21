@@ -18,8 +18,10 @@ criteria_page = ui.div(
          "the prioritisation process."
      ),
     ui.h6(ui.strong("ℹ️ Note: The criteria below are examples only and are not exhaustive. "
-                    "Please select or add criteria that are relevant to your decision",
-                    class_="page-title")),
+                    "Please select or add criteria that are relevant to your decision"),
+                    class_="note-text"),
+
+    ui.br(),
 
     #----------------Suggested criteria--------------------------------------------------------------------
 
@@ -53,13 +55,13 @@ criteria_page = ui.div(
                 class_="criterion-card"
             ),
 
-            ui.input_action_button(
-                "add_cost",
-                "💷 Cost",
-                class_="criterion-card"
-            ),
+            # ui.input_action_button(
+            #     "add_cost",
+            #     "💷 Cost",
+            #     class_="criterion-card"
+            # ),
 
-            col_widths=(3, 3, 3, 3, 3)
+            col_widths=(3, 3, 3, 3)
         )
     ),
 
