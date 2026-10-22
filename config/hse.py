@@ -5,15 +5,16 @@ from core.themes import project_theme_css
 #---------------------------------------------------------------------------------------------------------------------
 #----------------------Project specific branding-------------------------------------------------------------------------------
 
-project_name = "Health Service Executive's Prioritisation Platform"
+project_name = "Health Economics Unit's Prioritisation Platform"
+#project_name = "Health Service Executive's Prioritisation Platform"
 #--------------------------------------------------------------------------------------------------
 project_subtitle = "MCDA - Multi-Criteria Decision Analysis"
 #--------------------------------------------------------------------------------------------------
-project_footername = "Health Service Executive (HSE)"
+project_footername = "Health Economics Unit (HEU)"
+#project_footername = "Health Service Executive (HSE)"
 #--------------------------------------------------------------------------------------------------
-project_logo = "hse_logo_white.png"
-
-
+project_logo = ""
+#project_logo = "hse_logo_white.png"
 #---------------------------------------------------------------------------------------------------------------------
 #------------------------Project specific landing page----------------------------------------------------------------
 
