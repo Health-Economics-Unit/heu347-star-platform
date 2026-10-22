@@ -127,6 +127,9 @@ def create_results_chart(results, chart_colours):
 
     ax.set_axisbelow(True)
 
+    ax.set_ylim(0, 105)         # fixing the y axis from 0 to 100
+    ax.set_yticks(range(0, 101, 20))
+
     fig.tight_layout()
 
     return fig

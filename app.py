@@ -15,6 +15,7 @@ from modules.options import options_page
 from modules.criteria import criteria_page
 from modules.scores import scores_page
 from modules.weighting import weighting_page
+from modules.star_cost import star_cost_page
 from modules.results import results_page
 from modules.components import page_header,app_banner, app_footer
 from uuid import uuid4
@@ -65,6 +66,7 @@ app_ui = ui.page_fluid(
             ui.nav_panel("options", options_page),
             ui.nav_panel("criteria", criteria_page),
             ui.nav_panel("weighting", weighting_page),
+            ui.nav_panel("star_cost", star_cost_page),
             ui.nav_panel("scores", scores_page),
             ui.nav_panel("results", results_page),
 
@@ -201,6 +203,7 @@ def server(input, output, session):
     criteria_list = reactive.value([])              #stores criteria added manually on criteria page
 
     weights_state = reactive.value({})
+    costs_state = reactive.value({})
 
     scores_state = reactive.value({})
 
@@ -1138,11 +1141,21 @@ def server(input, output, session):
 
         ui.notification_show("Weights saved", type="message", duration=3)
 
+    #-----logic to redirect to star_cost page or scores page depending on the decision type-------------------------------
 
-        ui.update_navset(
-            "main_nav",
-            selected="scores"
-        )
+        if decision_type_state() == "STAR - MCDA":
+
+            ui.update_navset(
+                "main_nav",
+                selected="star_cost"
+            )
+
+        else:
+
+            ui.update_navset(
+                "main_nav",
+                selected="scores"
+            )
 
 #-----------Previous page navigation to criteria page-------------------------------------------------------
 
@@ -1154,6 +1167,16 @@ def server(input, output, session):
             selected="criteria"
         )
 
+#-----------------------------------------------------------------------------------------------------------
+#--------------------------------------Costs card-----------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------
+    @reactive.effect
+    @reactive.event(input.back_to_weighting_from_cost)
+    def back_to_weighting_from_cost():
+        ui.update_navset(
+            "main_nav",
+            selected="weighting"
+        )
 #-----------------------------------------------------------------------------------------------------------
 #--------------------------------------Scores card----------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------

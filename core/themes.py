@@ -158,9 +158,12 @@ def project_theme_css(palette):
     .project-card {{
     
         position: relative;
-        background-color: {palette["white"]};
+        
+        background-color: {palette["secondary"]};           /*sage green*/
         border: 2px solid {palette["border"]};
         border-radius: 20px;
+        color: {palette["white"]};
+        
         box-shadow: 0 2px 6px rgba(0,0,0,0.06);
         transition: all 0.2s ease;
         cursor: pointer;
@@ -171,13 +174,14 @@ def project_theme_css(palette):
     
     .card-title {{
     
-        color: {palette["primary"]};
+        color: white;
+        /*color: {palette["white"]};*/
         font-weight: 600;
     }}
     
     .card-description {{
     
-        color: {palette["text"]};
+        color: {palette["white"]};
     }}
     
     
@@ -233,14 +237,18 @@ def project_theme_css(palette):
         box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }}
     
+    .project-card:hover * {{
+    color: {palette["primary"]} !important;
+    }}
+    
 /*----------------Criteria Cards----------------------------------------------------------------------------*/
     
     .criterion-card {{
     
-        background-color: {palette["white"]};
+        background-color: {palette["secondary"]};
         border: 2px solid {palette["border"]};
-        border-radius: 15px;
-        color: {palette["primary"]};
+        border-radius: 20px;
+        color: {palette["white"]};
         font-weight: 600;
         transition: all 0.2s ease;
     }}
@@ -248,8 +256,8 @@ def project_theme_css(palette):
     .criterion-card.btn,
     .criterion-card.btn:visited {{
 
-    background-color: {palette["white"]} !important;
-    color: {palette["primary"]} !important;
+    background-color: {palette["secondary"]} !important;
+    color: {palette["white"]} !important;
     border-color: {palette["border"]} !important;
     }}
 
@@ -293,16 +301,16 @@ def project_theme_css(palette):
     
     .results-nav-card {{
     
-        background-color: {palette["white"]};
+        background-color: {palette["background"]};
         border: 2px solid {palette["border"]};
-        border-radius: 15px;
+        border-radius: 20px;
         padding: 25px;
         font-size: 0.95rem;
         text-align: center;
         width: 140px;
         min-height: 80px;
-        color: {palette["primary"]};
-        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        color: {palette["white"]};
+        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
         cursor: pointer;
         transition: all 0.2s ease;
     }}
@@ -310,8 +318,8 @@ def project_theme_css(palette):
     .results-nav-card.btn,
     .results-nav-card.btn:visited {{
     
-        background-color: {palette["white"]} !important;
-        color: {palette["primary"]} !important;
+        background-color: {palette["secondary"]} !important;
+        color: {palette["white"]} !important;
         border-color: {palette["border"]} !important;
     }}
     
