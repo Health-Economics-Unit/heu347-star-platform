@@ -1,4 +1,7 @@
-# This page contains fixed values for the MCDA project like project details, landing page details, color palette, chart_colors, theme_css ::
+# This page contains fixed values for the MCDA project like project details, landing page details,
+# color palette, chart_colors, theme_css :
+
+from core.themes import project_theme_css
 
 #----------------------Project specific branding-------------------------------------------------------------------------------
 
@@ -36,8 +39,7 @@ how_to_text = ("The Strategic Prioritisation Platform guides users through the "
 #---------------------------------------------------------------------------------------------------------------------
 example_title = "Placeholder: Example scenario that will load by default to help the users understand how it works"
 #--------------------------------------------------------------------------------------------------------------------
-note_text = ("Note: Complete the stages below in sequence, as each stage builds on the information collected in the previous step.")
-
+note_text = ("ℹ️ Note: Complete the stages below in sequence, as each stage builds on the information collected in the previous step.")
 
 
 #---------------------------------------------------------------------------------------------------------------------
@@ -76,140 +78,44 @@ navigation_cards = [
 
 #--------------------------------Project Aesthetics------------------------------------------------------------------
 #------------------------Color palette-------------------------------------------------------------------------------
+# HEU Palette:
+
+# ColourBest outcome / lowest risk	            #24B1A8 (teal)
+# Medium-low	                                #59C0E9 (light blue)
+# Medium	                                    #4085C4 (blue)
+# Medium-high	                                #213B7D (dark blue)
+# Missing / Not applicable	                    #EAEBEB (light grey)
+
+
+# NHS palette:
+
+# NHS Dark Blue                               #003087
+# NHS Blue                                    #005EB8
+# NHS Bright Blue                             #0072CE       used this color
+# NHS Light Blue                              #41B6E6
+# NHS Aqua Blue                               #00A9CE
+
 
 palette = {
-    "teal":         "#24B1A8",      # best_outcome
-    "light blue":   "#59C0E9",      # medium_low
-    "blue":         "#4085C4",      # medium
-    "dark blue":    "#213B7D",      # medium high
-    "light grey":   "#EAEBEB"       # missing
+    "primary":      "#213B7D",          #main - use for banner, navigation active state, primary buttons, cards and charts
+    "secondary":    "#4085C4",          #use for landing page backgrounds, information cards etc
+    "accent":       "#59C0E9",          #for borders, hover etc
+    "background":   "#F7FAFC",          #page background, info panels etc
+    "border":       "#D6E3F0",
+    "text":         "#234B4B",          #1F2937   234B4B
+    "white":        "#FFFFFF"
 }
 
-nhs_palette = {
-    "nhs_blue":     "#005EB8"
-}
+theme_css = project_theme_css(palette)
+
 
 #-------------------------Chart colors--------------------------------------------------------------------------------
 
+chart_colours = [
 
-#-------------------------CSS theme-----------------------------------------------------------------------------------
-
-theme_css = """
-
-body {
-    background-color: #F3F5F4;                  /* Page background */
-}
-
-
-.hse-heading {                                  /* Headings */
-    color: #0D6B5A;
-    font-weight: 700;
-}
-
-/*--------------------------- hse banner------------------*/
-.project-banner {
-
-    background-color: #000000;
-    color: white;
-    border-radius: 0;
-    border: none;
-    padding: 50px;
-    margin-top: 20px;
-    margin-bottom: 30px;
-    min-height: 250px;
-}
-
-.project-banner h1{
-    color: #4F8F88;
-    font-weight: 700;
-},
-
-.project-banner h2,
-.project-banner h3,
-.project-banner h4,
-.project-banner h5 {
-    color: #234B4B;
-}
-
-.project-banner-subtitle {
-
-    color: white;
-    font-size: 1.25rem;
-    font-weight: 600;
-}
-
-/*-----------------------------Cards---------------------------*/
-.nav-card {                                     
-
-    background-color: #BFD7D3;
-    border: 2px solid #C9DEDA;
-    border-radius: 20px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-    margin-bottom: 20px;
-}
-
-/*-----------------------Card header---------------------------*/
-
-.nav-card .card-header {                        
-
-    background-color: #FFFFFF;
-    color: #0D6B5A;
-    font-weight: 600;
-    border-bottom: 2px solid #C9DEDA;
-}
-
-.nav-card:hover {
-
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
-
-
-/*---------------------Criteria cards-----------------------*/
-
-.criterion-card {                               
-    background-color: #FFFFFF;
-    border: 2px solid #C9DEDA;
-    border-radius: 15px;
-    color: #0D6B5A;
-    font-weight: 600;
-}
-
-.criterion-card:hover {
-    background-color: #F3F5F4;
-    border-color: #0D6B5A;
-}
-
-
-/*---------------------Navigation Cards---------------------*/
-
-.nav-card {
-
-    background-color: #FFFFFF;
-    border: 2px solid #C9DEDA;
-    border-radius: 20px;
-    color: #0D6B5A;
-}
-
-.nav-card:hover {
-
-    background-color: #F3F5F4;
-    border-color: #0D6B5A;
-}
-
-
-/*---------------------Primary Buttons---------------------*/
-
-.btn-primary {
-
-    background-color: #0D6B5A;
-    border-color: #0D6B5A;
-}
-
-.btn-primary:hover {
-
-    background-color: #2A8B77;
-
-    border-color: #2A8B77;
-}
-
-"""
+    "#24B1A8",   # Best outcome
+    "#59C0E9",   # Medium-low
+    "#4085C4",   # Medium
+    "#213B7D",   # Medium-high
+    "#EAEBEB"    # Missing
+]

@@ -55,13 +55,10 @@ criteria_page = ui.div(
                 class_="criterion-card"
             ),
 
-            # ui.input_action_button(
-            #     "add_cost",
-            #     "💷 Cost",
-            #     class_="criterion-card"
-            # ),
+            ui.output_ui("cost_criteria_button"),       #displayed only for mcda and not for star-mcda
 
-            col_widths=(3, 3, 3, 3)
+
+            col_widths=(3, 3, 3, 3, 3)
         )
     ),
 
@@ -71,6 +68,8 @@ criteria_page = ui.div(
     ui.card(
 
         ui.card_header("Add Your Own Criterion"),
+
+        ui.output_ui("star_criteria_note"),             #to display the star_cost note
 
         ui.layout_columns(
 

@@ -1,4 +1,7 @@
-# This page contains fixed values for the STAR project like project details, landing page details, color palette, chart_colors, theme_css ::
+# This page contains fixed values for the STAR project like project details, landing page details,
+# color palette, chart_colors, theme_css :
+
+from core.themes import project_theme_css
 
 #----------------------Project specific branding-------------------------------------------------------------------------------
 
@@ -82,27 +85,48 @@ navigation_cards = [
 ]
 
 
+
 #--------------------------------Project Aesthetics------------------------------------------------------------------
 #------------------------Color palette-------------------------------------------------------------------------------
 
-heu_palette = {
-    "teal":         "#24B1A8",      # best_outcome
-    "light blue":   "#59C0E9",      # medium_low
-    "blue":         "#4085C4",      # medium
-    "dark blue":    "#213B7D",      # medium high
-    "light grey":   "#EAEBEB"       # missing
+# HEU Palette:
+
+# ColourBest outcome / lowest risk	            #24B1A8 (teal)
+# Medium-low	                                #59C0E9 (light blue)
+# Medium	                                    #4085C4 (blue)
+# Medium-high	                                #213B7D (dark blue)
+# Missing / Not applicable	                    #EAEBEB (light grey)
+
+
+# NHS palette:
+
+# NHS Dark Blue                               #003087
+# NHS Blue                                    #005EB8
+# NHS Bright Blue                             #0072CE       used this color
+# NHS Light Blue                              #41B6E6
+# NHS Aqua Blue                               #00A9CE
+
+
+palette = {
+    "primary":      "#213B7D",          #main - use for banner, navigation active state, primary buttons, cards and charts
+    "secondary":    "#4085C4",          #use for landing page backgrounds, information cards etc
+    "accent":       "#59C0E9",          #for borders, hover etc
+    "background":   "#F7FAFC",          #page background, info panels etc
+    "border":       "#D6E3F0",
+    "text":         "#234B4B",          #1F2937   234B4B
+    "white":        "#FFFFFF"
 }
 
-nhs_palette = {
-    "nhs_blue":     "#005EB8"
-}
+theme_css = project_theme_css(palette)
+
 
 #-------------------------Chart colors--------------------------------------------------------------------------------
 
+chart_colours = [
 
-#-------------------------CSS theme-----------------------------------------------------------------------------------
-
-theme_css = """
-
-
-"""
+    "#24B1A8",   # Best outcome
+    "#59C0E9",   # Medium-low
+    "#4085C4",   # Medium
+    "#213B7D",   # Medium-high
+    "#EAEBEB"    # Missing
+]

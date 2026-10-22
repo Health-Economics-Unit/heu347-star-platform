@@ -247,7 +247,33 @@ def server(input, output, session):
             """
         )
 
-#------------------captures the decision record-----------------------------------------------
+#-----logic for STAR-MCDA to display/hide cost button and add star_criteria_note------------------------
+
+    @render.ui
+    def cost_criteria_button():
+        if decision_type_state() == "STAR - MCDA":
+            return ui.div()
+
+        return ui.input_action_button(
+            "add_cost",
+            "💷 Cost",
+            class_="criterion-card"
+        )
+
+    @render.ui
+    def star_criteria_note():
+        if decision_type_state() == "STAR - MCDA":
+            return ui.h6(
+                ui.strong(
+                    "ℹ️ Note: Please do not add cost as a criterion. "
+                    "Cost is evaluated separately in the subsequent stage of the analysis."
+                ),
+                class_="note-text"
+            )
+
+        return ui.div()
+
+    #------------------captures the decision record-----------------------------------------------
 
     def build_decision_record():
 
@@ -590,10 +616,20 @@ def server(input, output, session):
                 duration=2
             )
 
+#----logic of displaying cost based on star_mcda/mcda decision type--------------------------
 
     @reactive.effect
     @reactive.event(input.add_cost)
     def add_cost():
+        if decision_type_state() == "STAR - MCDA":
+            ui.notification_show(
+                "Cost should not be included as a criterion for STAR-MCDA. Cost is assessed separately in the Cost stage.",
+                type="warning",
+                duration=4
+            )
+
+            return
+
         if add_criteria("Cost"):
             ui.notification_show(
                 "Cost added.",

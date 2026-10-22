@@ -181,7 +181,7 @@ def project_theme_css(palette):
     }}
     
     
-/*-----Info card manages the information card on the landing page-------------*/
+/*-----Info card manages the information card on the landing page-----------------------*/
     
     .info-card {{
     
@@ -197,7 +197,7 @@ def project_theme_css(palette):
     }}
     
 /*---------------Hover effect for all pages &-----------------------------------------------------------------------
------------------------Theme for all other pages now except the landing page(it has its own theme on top)----------*/
+----------Theme for all other pages except the landing page(it has its own theme on top)------------------------*/
     
     .page-title {{
     
@@ -245,7 +245,27 @@ def project_theme_css(palette):
         transition: all 0.2s ease;
     }}
     
-/*--------------------Buttons--------------------------------------------------------------------------------*/
+    .criterion-card.btn,
+    .criterion-card.btn:visited {{
+
+    background-color: {palette["white"]} !important;
+    color: {palette["primary"]} !important;
+    border-color: {palette["border"]} !important;
+    }}
+
+    .criterion-card.btn:hover,
+    .criterion-card.btn:focus,
+    .criterion-card.btn:active {{
+    
+        background-color: {palette["background"]} !important;
+        color: {palette["primary"]} !important;
+        border-color: {palette["primary"]} !important;
+    
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }}
+    
+/*--------------------Buttons----------------------------------------------------------------------------------------------*/
     
     .btn-primary {{
     
@@ -295,7 +315,7 @@ def project_theme_css(palette):
         border-color: {palette["border"]} !important;
     }}
     
-/*-----------------------------bootstrap override for results card----------------*/
+/*-----------------------------bootstrap override for results card------------------------------------------------------*/
     
     .results-nav-card.btn:hover,
     .results-nav-card.btn:focus,
