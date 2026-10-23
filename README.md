@@ -14,7 +14,7 @@ The platform enables decision-makers to:
 - Evaluate and compare competing options
 - Apply multi-criteria decision analysis (MCDA) principles
 - Perform STAR-based prioritisation
-- Explore scenario and sensitivity analyses
+- Explore sensitivity analysis
 - Support transparent and evidence-based resource allocation
 
 ## Current Development Status
@@ -35,8 +35,8 @@ The application is currently under active development.
 ```text
 app.py          Main application entry point and application orchestration
 config/         Project specific settings for MCDA/STAR/HSE for now
-modules/        Application UI pages 
-components/     Reusable UI components
-core/           Shared logic and utilities
+modules/        Application UI pages and reusable UI components
+core/           Shared app theme, color palette, charts and validators
+reports/        PDF download code
 calculations/   All calculations weighting, ranking etc
-visuals/        App logo, images etc
+assets/         logos
