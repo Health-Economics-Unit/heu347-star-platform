@@ -44,8 +44,9 @@ scores_page = ui.div(
 
     page_navigation(
         previous_button_id="back_to_weighting",
-        previous_label="Weighting page",
+        previous_label="Cost page",
         save_button_id="save_scores",
+        download_button_id="download_project_scores",
         continue_button_id="save_continue_scores"
     )
 )

@@ -21,7 +21,7 @@ star_cost_page = ui.div(
 
             ui.card_header("Option Costs"),
 
-            ui.output_ui("cost_matrix"),
+            ui.output_ui("star_cost_matrix"),
 
             class_="page-card"
         ),
@@ -34,6 +34,7 @@ star_cost_page = ui.div(
         previous_button_id="back_to_weighting_from_cost",
         previous_label="Weighting page",
         save_button_id="save_costs",
+        download_button_id="download_project_costs",
         continue_button_id="save_continue_costs"
     )
 )

@@ -23,12 +23,14 @@ from calculations.weights_calc import normalise_weights
 from calculations.results_calc import calculate_results
 from core.themes import light_theme, dark_theme
 from config.active_project import *
+import json
+import re
 from pathlib import Path
 from datetime import datetime
 from reports.pdf_report import generate_pdf_report
 from core.charts import create_results_chart
 from core.validators import (validate_decision, validate_options, validate_criteria)
-
+from calculations.star_cost_calc import calculate_total_cost
 #------------------------------------------------------------------------------------------------
 
 app_ui = ui.page_fluid(
@@ -86,11 +88,11 @@ app_ui = ui.page_fluid(
             display:flex;                   /* arrange all child elements using Flexbox */
             flex-direction:column;          /* stack everything vertically */
         """
-
     )
-
 )
 
+#-------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------
 #------Application logic function-----------------------------------------------------------------
 
 def server(input, output, session):
@@ -103,6 +105,19 @@ def server(input, output, session):
         ui.update_navset(
             "main_nav",
             selected="landing"
+        )
+#--------------------------landing header theme for load project--------------------------------
+
+    @render.ui
+    def header_load_project():
+
+        if input.main_nav() != "landing":
+            return ui.div()
+
+        return ui.input_action_button(
+            "open_load_project",
+            "📂 Load Project",
+            class_="btn-outline-primary"
         )
 
 #-----Theme toggle------------------------------------------------------------------------------
@@ -137,6 +152,7 @@ def server(input, output, session):
         else:
             await session.send_custom_message("theme_toggle", "light")
             #ui.notification_show("Light mode enabled")
+
 
 #-----Navigation cards-------------------------------------------------------------------------
 
@@ -193,7 +209,7 @@ def server(input, output, session):
         )
 
 
-#-----Application state & validation-------------------------------------------------------------------------------------
+#-----Application state declarations-------------------------------------------------------------------------------------
 
     decision_context = reactive.value({})           #stores everything selected on Decision page
     decision_type_state = reactive.value(None)      #stores currently selected decision type card
@@ -203,9 +219,219 @@ def server(input, output, session):
     criteria_list = reactive.value([])              #stores criteria added manually on criteria page
 
     weights_state = reactive.value({})
+
     costs_state = reactive.value({})
 
     scores_state = reactive.value({})
+
+
+#----------- Read the uploaded JSON and restore all reactive states-------------------------------------------
+
+    @reactive.effect
+    @reactive.event(input.load_project)
+    def load_project():
+
+        uploaded = input.load_project()
+
+        if not uploaded:
+            return
+
+        file_path = uploaded[0]["datapath"]
+
+        try:
+
+            with open(
+                file_path,
+                "r",
+                encoding="utf-8"
+            ) as f:
+
+                project_data = json.load(f)
+
+        except Exception as e:
+
+            ui.notification_show(
+                f"Unable to load project: {e}",
+                type="error",
+                duration=5
+            )
+
+            return
+
+    #-----Restore decision-----------------------------------------------------
+
+        loaded_decision = project_data.get(
+            "decision",
+            {}
+        )
+
+        decision_context.set(
+            loaded_decision
+        )
+
+        decision_type_state.set(
+            project_data.get(
+                "decision_type",
+                loaded_decision.get("decision_type")
+            )
+        )
+
+        ui.update_text(
+            "decision_title",
+            value=loaded_decision.get(
+                "decision_title",
+                ""
+            )
+        )
+
+        ui.update_text_area(
+            "decision_description",
+            value=loaded_decision.get(
+                "decision_description",
+                ""
+            )
+        )
+
+    #----------Restore Options------------------------------
+
+        options_list.set(
+            project_data.get(
+                "options",
+                []
+            )
+        )
+
+    #----------Restore Criteria------------------------------
+
+        criteria_list.set(
+            project_data.get(
+                "criteria",
+                []
+            )
+        )
+
+    #----------Restore Weights------------------------------
+
+        weights_state.set(
+            project_data.get(
+                "weights",
+                {}
+            )
+        )
+
+    #----------Restore Costs------------------------------
+
+        costs_state.set(
+            project_data.get(
+                "costs",
+                {}
+            )
+        )
+
+    #----------Restore scores------------------------------
+
+        scores_state.set(
+            project_data.get(
+                "scores",
+                {}
+            )
+        )
+
+    #----------Stay on landing page after loading--------------
+
+        ui.update_navset(
+            "main_nav",
+            selected="landing"
+        )
+
+        ui.notification_show(
+            "Project loaded successfully.",
+            type="message",
+            duration=3
+        )
+
+#------ To build project record on every page save (export project)-------------------------------------
+
+    def build_project_record():
+
+        return {
+            "decision": decision_context(),
+            "decision_type": decision_type_state(),
+
+            "options": options_list(),
+            "criteria": criteria_list(),
+            "weights": weights_state(),
+            "costs": costs_state(),
+            "scores": scores_state(),
+
+            "saved_at": datetime.now().strftime(
+                "%d/%m/%Y %H:%M:%S")
+        }
+
+#----------Download(JSON file) function for every page--------------------------------
+
+# ----------Project JSON download------------------------------------------------------------
+
+    def generate_project_json():
+        return json.dumps(
+            build_project_record(),
+            indent=4
+        )
+
+
+    def project_filename():
+        return (
+            f"project_"
+            f"{datetime.now():%Y%m%d_%H%M}.json"
+        )
+
+
+    @render.download(
+        filename=project_filename,
+        media_type="application/json"
+    )
+    def download_project_decision():
+        yield generate_project_json()
+
+
+    @render.download(
+        filename=project_filename,
+        media_type="application/json"
+    )
+    def download_project_options():
+        yield generate_project_json()
+
+
+    @render.download(
+        filename=project_filename,
+        media_type="application/json"
+    )
+    def download_project_criteria():
+        yield generate_project_json()
+
+
+    @render.download(
+        filename=project_filename,
+        media_type="application/json"
+    )
+    def download_project_weighting():
+        yield generate_project_json()
+
+
+    @render.download(
+        filename=project_filename,
+        media_type="application/json"
+    )
+    def download_project_costs():
+        yield generate_project_json()
+
+
+    @render.download(
+        filename=project_filename,
+        media_type="application/json"
+    )
+    def download_project_scores():
+        yield generate_project_json()
 
 #-------------------------------------------------------------------------------------------------------------
 #---------Decision page logic---------------------------------------------------------------------------------
@@ -323,6 +549,7 @@ def server(input, output, session):
             build_decision_record()
         )
 
+
         print("Saved decision:", decision_context())        #prints to the terminal
 
         ui.notification_show(                               #popup notification
@@ -357,7 +584,8 @@ def server(input, output, session):
 
         current_options = options_list().copy()
 
-        # Prevent duplicate option names------------------------------------------------------------
+    #-----Prevent duplicate option names------------------------------------------------------------
+
         existing_names = [option["name"].lower()
             for option in current_options
         ]
@@ -477,6 +705,7 @@ def server(input, output, session):
             )
 
             return
+
 
         print("Saved options:",options_list())
 
@@ -1129,7 +1358,7 @@ def server(input, output, session):
             }
 
         normalised = normalise_weights(weights)
-        weights_state.set(normalised)       #saving the normalised weight
+        weights_state.set(normalised)           #saving the normalised weight
 
         print("Weighting Summary:")
         for item in normalised.values():
@@ -1170,31 +1399,445 @@ def server(input, output, session):
 #-----------------------------------------------------------------------------------------------------------
 #--------------------------------------Costs card-----------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------
+
+# -------Cost matrix-----------------------------------------------------------------------------------------
+
+    @render.ui
+    def star_cost_matrix():
+
+        current_options = options_list()
+        saved_costs = costs_state()
+
+        if not current_options:
+            return ui.p(
+                "Add options before entering costs."
+            )
+
+        matrix_rows = [
+
+            # Header row
+            ui.div(
+
+                ui.div(
+                    ui.strong("Option")
+                ),
+
+                ui.div(
+                    ui.strong("Cost per person (£)")
+                ),
+
+                ui.div(
+                    ui.strong("Number of people impacted")
+                ),
+
+                ui.div(
+                    ui.strong("Total cost (£)")
+                ),
+
+                style="""
+                    display:grid;
+                    grid-template-columns:2fr 1.5fr 1.5fr 1.5fr;
+                    gap:10px;
+                    font-weight:bold;
+                    margin-bottom:10px;
+                    padding:8px;
+                    border-bottom:2px solid #ddd;
+                """
+            )
+        ]
+
+        for option in current_options:
+
+            option_id = option["id"]
+
+            saved_option = saved_costs.get(
+                option_id,
+                {}
+            )
+
+            saved_cost_per_person = saved_option.get(
+                "cost_per_person",
+                0
+            )
+
+            saved_people_receiving = saved_option.get(
+                "people_receiving",
+                0
+            )
+
+            saved_total_cost = saved_option.get(
+                "total_cost",
+                0
+            )
+
+            matrix_rows.append(
+
+                ui.div(
+
+                    # Option name
+                    ui.div(
+                        option["name"]
+                    ),
+
+                    # Cost per person
+                    ui.div(
+
+                        ui.span(
+                            "£",
+                            style="""
+                                font-weight:bold;
+                                margin-right:5px;
+                            """
+                        ),
+
+                        ui.input_text(
+                            f"cost_per_person_{option_id}",
+                            label=None,
+                            value=str(saved_cost_per_person),
+                            placeholder = "Enter cost"
+
+                        ),
+
+                        style="""
+                            display:flex;
+                            align-items:center;
+                        """
+                    ),
+
+                    # Number of people
+                    ui.input_text(
+                        f"people_receiving_{option_id}",
+                        label=None,
+                        value=str(saved_people_receiving),
+                        placeholder="Enter number"
+                    ),
+
+                    # Total cost
+                    ui.input_text(
+                        f"total_cost_{option_id}",
+                        label=None,
+                        value=f"£{saved_total_cost:,.2f}"
+                    ),
+
+                    style="""
+                        display:grid;
+                        grid-template-columns:2fr 1.5fr 1.5fr 1.5fr;
+                        gap:10px;
+                        align-items:center;
+                        margin-bottom:10px;
+                        padding:8px;
+                        border-bottom:1px solid #ddd;
+                    """
+                )
+            )
+
+        return ui.div(
+            *matrix_rows
+        )
+
+    #----------validation------------------------------------------
+
+    @reactive.effect
+    def validate_cost_inputs():
+        for option in options_list():
+
+            option_id = option["id"]
+
+            try:
+                cost_value = input[
+                    f"cost_per_person_{option_id}"
+                ]()
+
+                people_value = input[
+                    f"people_receiving_{option_id}"
+                ]()
+
+            except KeyError:
+                continue
+
+            # ---------- Cost per person ----------
+
+            if cost_value:
+
+                try:
+                    cost = float(cost_value)
+
+                    if cost < 0:
+                        ui.update_text(
+                            f"cost_per_person_{option_id}",
+                            value=""
+                        )
+
+                        ui.notification_show(
+                            "Cost per person cannot be negative.",
+                            type="error",
+                            duration=3
+                        )
+
+                except ValueError:
+
+                    ui.update_text(
+                        f"cost_per_person_{option_id}",
+                        value=""
+                    )
+
+                    ui.notification_show(
+                        "Cost per person must contain numbers only.",
+                        type="error",
+                        duration=3
+                    )
+
+            # ---------- Number of people ----------------
+
+            if people_value:
+
+                try:
+
+                    people = int(people_value)
+
+                    if people < 0:
+                        ui.update_text(
+                            f"people_receiving_{option_id}",
+                            value=""
+                        )
+
+                        ui.notification_show(
+                            "Number of people cannot be negative.",
+                            type="error",
+                            duration=3
+                        )
+
+                except ValueError:
+
+                    ui.update_text(
+                        f"people_receiving_{option_id}",
+                        value=""
+                    )
+
+                    ui.notification_show(
+                        "Number of people must be a number.",
+                        type="error",
+                        duration=3
+                    )
+
+
+
+# -------Automatically calculate total cost as the user enters values----------------------------------------
+
+    @reactive.effect
+    def update_total_costs():
+
+        current_options = options_list()
+
+        for option in current_options:
+
+            option_id = option["id"]
+
+            try:
+                cost_per_person = input[
+                    f"cost_per_person_{option_id}"
+                ]()
+
+                people_receiving = input[
+                    f"people_receiving_{option_id}"
+                ]()
+
+            except KeyError:
+                continue
+
+            total_cost = calculate_total_cost(
+                cost_per_person,
+                people_receiving
+            )
+
+            ui.update_text(
+                f"total_cost_{option_id}",
+                value=f"£{total_cost:,.2f}"
+            )
+
+
+# -------Build the cost record------------------------------------------------------------------------------
+
+    def build_costs_record():
+
+        costs = {}
+
+        for option in options_list():
+
+            option_id = option["id"]
+
+            try:
+                cost_per_person = input[
+                    f"cost_per_person_{option_id}"
+                ]()
+
+                people_receiving = input[
+                    f"people_receiving_{option_id}"
+                ]()
+
+            except KeyError:
+                cost_per_person = 0
+                people_receiving = 0
+
+            cost_per_person = float(
+                cost_per_person or 0
+            )
+
+            people_receiving = int(
+                people_receiving or 0
+            )
+
+            total_cost = calculate_total_cost(
+                cost_per_person,
+                people_receiving
+            )
+
+            costs[option_id] = {
+                "option": option["name"],
+                "cost_per_person": cost_per_person,
+                "people_receiving": people_receiving,
+                "total_cost": total_cost
+            }
+
+        return costs
+
+
+# -------Validate costs-------------------------------------------------------------------------------------
+
+    def validate_cost_entries(costs):
+
+        errors = []
+
+        if not costs:
+            return [
+                "No options are available for cost entry."
+            ]
+
+        for cost in costs.values():
+
+            if cost["cost_per_person"] <= 0:
+                errors.append(
+                    f"Enter a cost per person for "
+                    f"'{cost['option']}'."
+                )
+
+            if cost["people_receiving"] <= 0:
+                errors.append(
+                    f"Enter the number of people for "
+                    f"'{cost['option']}'."
+                )
+
+        return errors
+
+
+# -------Save costs-----------------------------------------------------------------------------------------
+
+    @reactive.effect
+    @reactive.event(input.save_costs)
+    def save_costs():
+
+        costs = build_costs_record()
+        errors = validate_cost_entries(costs)
+
+        if errors:
+            ui.notification_show(
+                "\n".join(errors),
+                type="error",
+                duration=4
+            )
+            return
+
+        costs_state.set(costs)
+
+        print("\nSTAR Cost Summary:")
+
+        for cost in costs.values():
+            print(
+                f"{cost['option']}: "
+                f"£{cost['cost_per_person']:,.2f} per person x "
+                f"{cost['people_receiving']:,} people = "
+                f"£{cost['total_cost']:,.2f}"
+            )
+
+        ui.notification_show(
+            "Costs saved.",
+            type="message",
+            duration=3
+        )
+
+
+# -------Save costs and continue to Scores------------------------------------------------------------------
+
+    @reactive.effect
+    @reactive.event(input.save_continue_costs)
+    def save_continue_costs():
+
+        costs = build_costs_record()
+        errors = validate_cost_entries(costs)
+
+        if errors:
+            ui.notification_show(
+                "\n".join(errors),
+                type="error",
+                duration=4
+            )
+            return
+
+        costs_state.set(costs)
+
+        print("\nSTAR Cost Summary:")
+
+        for cost in costs.values():
+            print(
+                f"{cost['option']}: "
+                f"£{cost['cost_per_person']:,.2f} per person x "
+                f"{cost['people_receiving']:,} people = "
+                f"£{cost['total_cost']:,.2f}"
+            )
+
+        ui.notification_show(
+            "Costs saved.",
+            type="message",
+            duration=2
+        )
+
+        ui.update_navset(
+            "main_nav",
+            selected="scores"
+        )
+
+
+# -------Previous page navigation---------------------------------------------------------------------------
+
     @reactive.effect
     @reactive.event(input.back_to_weighting_from_cost)
     def back_to_weighting_from_cost():
+
         ui.update_navset(
             "main_nav",
             selected="weighting"
         )
+
 #-----------------------------------------------------------------------------------------------------------
 #--------------------------------------Scores card----------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------
+
     @render.ui
     def scores_matrix():
-
         current_options = options_list()
         current_criteria = criteria_list()
 
-        if not current_options or not current_criteria:
+        # Get previously saved/loaded scores
+        saved_scores = scores_state()
 
+        if not current_options or not current_criteria:
             return ui.p(
                 "Add options and criteria before scoring."
             )
 
         matrix_rows = []
 
-        # Header row-------------------------------------------
+        # Header row
         matrix_rows.append(
 
             ui.div(
@@ -1214,19 +1857,20 @@ def server(input, output, session):
                 ],
 
                 style="""
-                    display:grid;
-                    grid-template-columns:repeat(
-                        %s,1fr
-                    );
-                    gap:10px;
-                    font-weight:bold;
-                    margin-bottom:10px;
-                """ % (len(current_criteria) + 1)
+                        display:grid;
+                        grid-template-columns:repeat(
+                            %s,1fr
+                        );
+                        gap:10px;
+                        font-weight:bold;
+                        margin-bottom:10px;
+                    """ % (len(current_criteria) + 1)
             )
         )
 
-        # Option rows-------------------------------------------
+        # Option rows
         for option in current_options:
+            option_id = option["id"]
 
             matrix_rows.append(
 
@@ -1241,38 +1885,50 @@ def server(input, output, session):
                         ui.input_numeric(
 
                             f"score_"
-                            f"{option['id']}_"
+                            f"{option_id}_"
                             f"{criterion['id']}",
 
                             None,
 
-                            value=0,
+                            value=(
+                                saved_scores
+                                .get(option_id, {})
+                                .get(
+                                    "criteria_scores",
+                                    {}
+                                )
+                                .get(
+                                    criterion["id"],
+                                    {}
+                                )
+                                .get(
+                                    "score",
+                                    0
+                                )
+                            ),
 
                             min=0,
-
                             max=100,
-
                             step=1
-
                         )
 
-                        for criterion
-                        in current_criteria
-
+                        for criterion in current_criteria
                     ],
 
                     style="""
-                        display:grid;
-                        grid-template-columns:repeat(
-                            %s,1fr
-                        );
-                        gap:10px;
-                        margin-bottom:10px;
-                    """ % (len(current_criteria) + 1)
+                            display:grid;
+                            grid-template-columns:repeat(
+                                %s,1fr
+                            );
+                            gap:10px;
+                            margin-bottom:10px;
+                        """ % (len(current_criteria) + 1)
                 )
             )
 
-        return ui.div(*matrix_rows)
+        return ui.div(
+            *matrix_rows
+        )
 
 #-----------Collect scores from the matrix-------------------------------------------------------------------
 
@@ -1359,6 +2015,20 @@ def server(input, output, session):
 
         scores_state.set(scores)
 
+        for option in scores.values():
+
+            print(
+                f"\n{option['option']}"
+            )
+
+            for item in option[
+                "criteria_scores"
+            ].values():
+                print(
+                    f"{item['criterion']}: "
+                    f"{item['score']}"
+                )
+
         ui.notification_show(
             "Scores saved",
             type="message",
@@ -1377,7 +2047,7 @@ def server(input, output, session):
     def back_to_weights():
         ui.update_navset(
             "main_nav",
-            selected="weighting"
+            selected="star_cost"
         )
 
 
@@ -1676,6 +2346,9 @@ def server(input, output, session):
             project_root=Path(__file__).parent
         )
 
+        pdf_bytes = pdf_buffer.getvalue()
+
+        print(f"PDF size: {len(pdf_bytes)} bytes")
 
         yield pdf_buffer.getvalue()
 

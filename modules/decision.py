@@ -91,6 +91,7 @@ decision_page = ui.div(
 
     page_navigation(
         save_button_id="save_decision",
+        download_button_id="download_project_decision",
         continue_button_id="save_continue_decision"
     )
 )

@@ -126,19 +126,26 @@ def generate_pdf_report(
 
     logo_path = Path(project_root) / "assets" / project_logo
 
-    if logo_path.exists():
+    if project_logo:
 
-        logo = Image(
-            str(logo_path),
-            width=32 * mm,
-            height=32 * mm,
-            kind="proportional"
+        logo_path = (
+                Path(project_root)
+                / "assets"
+                / project_logo
         )
 
-        logo.hAlign = "CENTER"
+        if logo_path.is_file():
+            logo = Image(
+                str(logo_path),
+                width=32 * mm,
+                height=32 * mm,
+                kind="proportional"
+            )
 
-        story.append(logo)
-        story.append(Spacer(1, 8 * mm))
+            logo.hAlign = "CENTER"
+
+            story.append(logo)
+            story.append(Spacer(1, 8 * mm))
 
     story.append(
         Paragraph(

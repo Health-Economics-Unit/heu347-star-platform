@@ -71,6 +71,7 @@ options_page = ui.div(
         previous_button_id="back_to_decision",
         previous_label="Decision page",
         save_button_id="save_options",
+        download_button_id="download_project_options",
         continue_button_id="save_continue_options"
     )
  )

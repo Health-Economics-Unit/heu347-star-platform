@@ -1,8 +1,12 @@
 # HEU Strategic Prioritisation Platform
+## MCDA-Multi-Criteria Decision Analysis / STAR-Socio-Technical Allocation of Resource
 
 **Health Economics Unit (HEU)**
+
 **Developer:** Akshata Ahire
-**Organisation:** Imperial College Healthcare NHS Trust  
+
+**Organisation:** Imperial College Healthcare NHS Trust
+
 **Status:** Active Development
 
 ## Overview

@@ -10,7 +10,7 @@ project_name = "Health Economics Unit's Prioritisation Platform"
 #--------------------------------------------------------------------------------------------------
 project_subtitle = "MCDA - Multi-Criteria Decision Analysis"
 #--------------------------------------------------------------------------------------------------
-project_footername = "Health Economics Unit (HEU)"
+project_footername = "This application is developed by the Health Economics Unit (HEU)"
 #project_footername = "Health Service Executive (HSE)"
 #--------------------------------------------------------------------------------------------------
 project_logo = ""

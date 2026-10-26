@@ -20,11 +20,34 @@ def page_header():
 
     return ui.div(
 
-        ui.input_action_button("go_home","🏠 Home"),
-        ui.output_ui("theme_button"),                   #the theme button logic is in app.py
+        ui.input_action_button(
+            "go_home",
+            "🏠 Home",
+            class_ = "header-button"
+        ),
+
+        ui.div(
+
+            ui.output_ui(
+                "header_load_project",
+                class_="header-button"
+            ),
+
+            ui.output_ui(
+                "theme_button",
+                class_="header-button"
+            ),
+
+            style="""
+                display:flex;
+                align-items:center;
+                gap:10px;
+            """
+        ),
 
         class_="page-header",
     )
+
 #-------------------------reusable application title-----------------------------------------------
 
 def app_banner():
@@ -104,6 +127,7 @@ def decision_card(button_id, title, description):
 def page_navigation(
     save_button_id,
     continue_button_id,
+    download_button_id,
     previous_button_id=None,
     previous_label=None
 ):
@@ -132,6 +156,13 @@ def page_navigation(
                 "💾 Save",                       #save button
                 class_="btn-outline-primary",
             ),
+
+            ui.download_button(
+                download_button_id,
+                "📥 Export Project",
+                class_ = "btn-outline-primary"
+            ),
+
 
             ui.input_action_button(
                 continue_button_id,

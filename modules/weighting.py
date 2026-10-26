@@ -51,6 +51,7 @@ weighting_page = ui.div(
         previous_button_id="back_to_criteria",
         previous_label="Criteria page",
         save_button_id="save_weights",
+        download_button_id="download_project_weighting",
         continue_button_id="save_continue_weights"
      )
 )

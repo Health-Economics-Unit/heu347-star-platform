@@ -91,6 +91,25 @@ def project_theme_css(palette):
         line-height: 1.6;
         text-align: justify;
     }}
+    
+/*--------------------Header buttons-----------------------------------------------------*/
+
+    .page-header .btn {{
+    
+        background-color: {palette["secondary"]} !important;
+        border: 2px solid {palette["border"]} !important;
+    
+        color: {palette["white"]} !important;
+        font-weight: 600;
+    }}
+    
+    .page-header .btn:hover {{
+    
+        background-color: {palette["background"]} !important;
+        border-color: {palette["primary"]} !important;
+    
+        color: {palette["primary"]} !important;
+    }}
 
 /*-------------------Banner used for project name + project subtitle + logo--------------------------------*/
     
@@ -241,6 +260,21 @@ def project_theme_css(palette):
     color: {palette["primary"]} !important;
     }}
     
+/*--------------------Landing page handling load project button browse hiding------------------------------*/
+
+    #load_project .input-group > input {{
+        display: none !important;
+    }}
+    
+    #load_project {{
+        margin-bottom: 0 !important;
+    }}
+    
+    #load_project .btn {{
+        height: 38px;
+        margin-bottom: 0 !important;
+    }}
+    
 /*----------------Criteria Cards----------------------------------------------------------------------------*/
     
     .criterion-card {{
@@ -271,6 +305,17 @@ def project_theme_css(palette):
     
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }}
+    
+/*--------------------Total cost field of cost page----------------------------------------------------------------------------------------------*/
+
+    input[id^="total_cost_"] {{
+    
+        pointer-events: none;
+        background-color: #f8f9fa !important;
+        color: {palette["text"]} !important;
+        font-weight: 600;
+        cursor: default;
     }}
     
 /*--------------------Buttons----------------------------------------------------------------------------------------------*/
