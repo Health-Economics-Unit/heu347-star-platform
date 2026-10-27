@@ -1,4 +1,6 @@
 from shiny import ui
+
+from config.active_project import default_criteria
 from modules.components import page_navigation
 
 criteria_page = ui.div(
@@ -24,42 +26,26 @@ criteria_page = ui.div(
     ui.br(),
 
     #----------------Suggested criteria--------------------------------------------------------------------
+    # Project specific criteria comes from respective projects
 
-    ui.card(
+    ui.layout_columns(
 
-        ui.card_header("Choose Criteria"),
-
-        ui.layout_columns(
-
-      ui.input_action_button(
-                "add_health_benefit",
-                "❤️ Health Benefits",
-                class_="criterion-card"
-            ),
-
+        *[
             ui.input_action_button(
-                "add_health_inequalities",
-                "⚖️ Impact on Health Inequalities",
+                f"add_{criterion['id']}",
+                f"{criterion['icon']} {criterion['name']}",
                 class_="criterion-card"
-            ),
+            )
+            for criterion in default_criteria
+        ],
 
-            ui.input_action_button(
-                "add_safety",
-                "🛡️ Safety",
-                class_="criterion-card"
-            ),
+            # Cost is deliberately separate because
+            # visibility depends on MCDA / STAR-MCDA
+        ui.output_ui(
+            "cost_criteria_button"
+        ),
 
-            ui.input_action_button(
-                "add_patient_experience",
-                "😊 Patient Experience",
-                class_="criterion-card"
-            ),
-
-            ui.output_ui("cost_criteria_button"),       #displayed only for mcda and not for star-mcda
-
-
-            col_widths=(3, 3, 3, 3, 3)
-        )
+        col_widths=3
     ),
 
 

@@ -258,7 +258,7 @@ def server(input, output, session):
 
             return
 
-    #-----Restore decision-----------------------------------------------------
+    #-----Restore decision-------------------------------------
 
         loaded_decision = project_data.get(
             "decision",
@@ -370,7 +370,7 @@ def server(input, output, session):
 
 #----------Download(JSON file) function for every page--------------------------------
 
-# ----------Project JSON download------------------------------------------------------------
+#-----------Project JSON download-----------------------------------------------------
 
     def generate_project_json():
         return json.dumps(
@@ -802,51 +802,75 @@ def server(input, output, session):
 
         return True
 
+# ------------------Suggested Criteria Cards from active project----------------------------
 
+    def register_default_criterion(criterion):
+
+        button_id = f"add_{criterion['id']}"
+        criterion_name = criterion["name"]
+
+        @reactive.effect
+        @reactive.event(input[button_id])
+
+        def handle_default_criterion():
+
+            if add_criteria(criterion_name):
+
+                ui.notification_show(
+                    f"{criterion_name} added.",
+                    type="message",
+                    duration=2
+                )
+
+
+    for criterion in default_criteria:
+
+        register_default_criterion(criterion)
+    
     #------------------Predefined Criteria Cards-----------------------------------------------
 
-    @reactive.effect
-    @reactive.event(input.add_health_benefit)
-    def add_health_benefit():
-        if add_criteria("Health Benefits"):
-            ui.notification_show(
-                "Health Benefits added.",
-                type="message",
-                duration=2
-            )
-
-
-    @reactive.effect
-    @reactive.event(input.add_health_inequalities)
-    def add_health_inequalities():
-        if add_criteria("Health Inequalities"):
-            ui.notification_show(
-                "Health Inequalities added.",
-                type="message",
-                duration=2
-            )
-
-
-    @reactive.effect
-    @reactive.event(input.add_safety)
-    def add_safety():
-        if add_criteria("Safety"):
-            ui.notification_show(
-                "Safety added.",
-                type="message",
-                duration=2
-            )
-
-
-    @reactive.effect
-    @reactive.event(input.add_patient_experience)
-    def add_patient_experience():
-        if add_criteria("Patient Experience"):
-            ui.notification_show(
-                "Patient Experience added.",
-                type="message",
-                duration=2
-            )
+    # @reactive.effect
+    # @reactive.event(input.add_health_benefit)
+    # def add_health_benefit():
+    #     if add_criteria("Health Benefits"):
+    #         ui.notification_show(
+    #             "Health Benefits added.",
+    #             type="message",
+    #             duration=2
+    #         )
+    #
+    #
+    # @reactive.effect
+    # @reactive.event(input.add_health_inequalities)
+    # def add_health_inequalities():
+    #     if add_criteria("Health Inequalities"):
+    #         ui.notification_show(
+    #             "Health Inequalities added.",
+    #             type="message",
+    #             duration=2
+    #         )
+    #
+    #
+    # @reactive.effect
+    # @reactive.event(input.add_safety)
+    # def add_safety():
+    #     if add_criteria("Safety"):
+    #         ui.notification_show(
+    #             "Safety added.",
+    #             type="message",
+    #             duration=2
+    #         )
+    #
+    #
+    # @reactive.effect
+    # @reactive.event(input.add_patient_experience)
+    # def add_patient_experience():
+    #     if add_criteria("Patient Experience"):
+    #         ui.notification_show(
+    #             "Patient Experience added.",
+    #             type="message",
+    #             duration=2
+    #         )
 
 #----logic of displaying cost based on star_mcda/mcda decision type--------------------------
 
@@ -870,15 +894,15 @@ def server(input, output, session):
             )
 
 
-    @reactive.effect
-    @reactive.event(input.add_feasibility)
-    def add_feasibility():
-        if add_criteria("Feasibility"):
-            ui.notification_show(
-                "Feasibility added.",
-                type="message",
-                duration=2
-            )
+    # @reactive.effect
+    # @reactive.event(input.add_feasibility)
+    # def add_feasibility():
+    #     if add_criteria("Feasibility"):
+    #         ui.notification_show(
+    #             "Feasibility added.",
+    #             type="message",
+    #             duration=2
+    #         )
 
     #-----Add custom criterion------------------------------------------------------------------
 

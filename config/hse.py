@@ -79,6 +79,31 @@ navigation_cards = [
 
 ]
 
+#---------------------Project specific criteria ------------------------------------------------------------------------------------
+
+default_criteria = [
+    {
+        "id": "health_benefits",
+        "name": "Health Benefits",
+        "icon": "❤️"
+    },
+    {
+        "id": "health_inequalities",
+        "name": "Impact on Health Inequalities",
+        "icon": "⚖️"
+    },
+    {
+        "id": "safety",
+        "name": "Safety",
+        "icon": "🛡️"
+    },
+    {
+        "id": "patient_experience",
+        "name": "Patient Experience",
+        "icon": "😊"
+    }
+
+]
 
 #--------------------------------Project Aesthetics------------------------------------------------------------------
 #------------------------Color palette-------------------------------------------------------------------------------
