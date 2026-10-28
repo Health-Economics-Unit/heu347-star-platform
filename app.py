@@ -36,12 +36,16 @@ from calculations.star_cost_calc import calculate_total_cost
 app_ui = ui.page_fluid(
 
     ui.div(
-        ui.tags.style(light_theme + dark_theme + theme_css),
+
+        ui.tags.style(
+            light_theme + dark_theme + theme_css
+        ),
+
         ui.tags.script("""
             Shiny.addCustomMessageHandler(
                 "theme_toggle",
                 function(mode){
-            
+
                     console.log("Theme received:", mode);
 
                     if(mode === "dark"){
@@ -52,7 +56,61 @@ app_ui = ui.page_fluid(
                     }
                 }
             );
+
+
+            document.addEventListener(
+                "click",
+                function(event){
+
+                    const loadButton =
+                        event.target.closest("#open_load_project");
+
+                    if(!loadButton){
+                        return;
+                    }
+
+                    event.preventDefault();
+
+                    const fileInput =
+                        document.getElementById("load_project");
+
+                    if(fileInput){
+
+                        console.log(
+                            "Opening Load Project file picker"
+                        );
+
+                        fileInput.click();
+                    }
+                    else{
+
+                        console.error(
+                            "load_project file input not found"
+                        );
+                    }
+                }
+            );
         """),
+
+        # Hidden actual file picker
+        ui.div(
+
+            ui.input_file(
+                "load_project",
+                None,
+                accept=[".json"],
+                multiple=False
+            ),
+
+            style="""
+                position:absolute;
+                left:-10000px;
+                top:auto;
+                width:1px;
+                height:1px;
+                overflow:hidden;
+            """
+        ),
 
 #-------------------------------------------------------------------------------------------------------------------
         page_header(),                                                  #header for all pages is in components file
@@ -107,6 +165,7 @@ def server(input, output, session):
             selected="landing"
         )
 #--------------------------landing header theme for load project--------------------------------
+# Open project will  only be displayed only on the landing page
 
     @render.ui
     def header_load_project():
@@ -2004,8 +2063,9 @@ def server(input, output, session):
 
     def save_scores():
         scores = build_scores_record()
+        scores_state.set(scores)                #save for use within the project
 
-        scores_state.set(scores)
+        print("\n Scores saved:", scores_state())   #test
 
         print("\nScores Summary:")
 
@@ -2037,7 +2097,8 @@ def server(input, output, session):
 
         scores = build_scores_record()
 
-        scores_state.set(scores)
+        scores_state.set(scores)                # save for use within the project
+        print("Scores saved before continuing:", scores_state())    #test
 
         for option in scores.values():
 
