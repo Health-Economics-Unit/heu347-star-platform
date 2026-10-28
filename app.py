@@ -20,17 +20,17 @@ from modules.results import results_page
 from modules.components import page_header,app_banner, app_footer
 from uuid import uuid4
 from calculations.weights_calc import normalise_weights
-from calculations.results_calc import calculate_results
+from calculations.mcda_results_calc import calculate_results
 from core.themes import light_theme, dark_theme
 from config.active_project import *
 import json
-import re
 from pathlib import Path
 from datetime import datetime
 from reports.pdf_report import generate_pdf_report
 from core.charts import create_results_chart
 from core.validators import (validate_decision, validate_options, validate_criteria)
-from calculations.star_cost_calc import calculate_total_cost
+from calculations.star_results_calc import calculate_total_cost, calculate_star_results
+
 #------------------------------------------------------------------------------------------------
 
 app_ui = ui.page_fluid(
@@ -2179,18 +2179,36 @@ def server(input, output, session):
 
         )
 
-#------ Decision Matrix --------------------------------------------------------------------------------------
+#------ Decision Matrix on Results page--------------------------------------------------------------------------------------
+# ------ Decision Matrix ----------------------------------------------------------------------
 
     @render.ui
     def decision_matrix():
 
         results = get_results()
 
-        if not results:
+        print(
+            "DECISION TYPE IN RESULTS:",
+            repr(decision_type_state())
+        )
 
+        if not results:
             return ui.p(
                 "No results available. Complete the Options, Criteria, "
                 "Weighting and Scores pages first."
+            )
+
+        # Check whether this is STAR-MCDA
+        is_star_mcda = (
+                str(decision_type_state()).strip().upper()
+                == "STAR - MCDA"
+        )
+
+        # If STAR-MCDA, add Cost and VFM calculations
+        if is_star_mcda:
+            results = calculate_star_results(
+                results,
+                costs_state()
             )
 
         # Get criterion names from the first result
@@ -2198,88 +2216,255 @@ def server(input, output, session):
             results[0]["weighted_scores"].keys()
         )
 
+        # Number of columns
+        # Common: Option + criteria + Benefit Score + Rank
+        number_of_columns = len(criteria_names) + 3
+
+        # STAR-MCDA adds Cost + VFM Ratio
+        if is_star_mcda:
+            number_of_columns += 2
+
         matrix_rows = []
 
-        # Header row
+
+        #-------------Header row---------------
+        header_cells = [
+
+            ui.div(
+                ui.strong("Option")
+            ),
+
+            *[
+                ui.div(
+                    ui.strong(name)
+                )
+                for name in criteria_names
+            ]
+        ]
+
+        #----------STAR-MCDA only-------------
+        if is_star_mcda:
+            header_cells.append(
+                ui.div(
+                    ui.strong("Costs")
+                )
+            )
+
+        # Common column
+        header_cells.append(
+            ui.div(
+                ui.strong("Benefit Score")
+            )
+        )
+
+        # STAR-MCDA only
+        if is_star_mcda:
+            header_cells.append(
+                ui.div(
+                    ui.strong("VFM Ratio")
+                )
+            )
+
+        # Common column
+        header_cells.append(
+            ui.div(
+                ui.strong("Rank")
+            )
+        )
+
         matrix_rows.append(
 
             ui.div(
 
-                ui.div(ui.strong("Option")),
-
-                *[
-                    ui.div(
-                        ui.strong(name)
-                    )
-                    for name in criteria_names
-                ],
-
-                ui.div(
-                    ui.strong("Benefit Score")
-                ),
-
-                ui.div(
-                    ui.strong("Rank")
-                ),
+                *header_cells,
 
                 style=f"""
-                    display:grid;
-                    grid-template-columns:
-                        repeat({len(criteria_names) + 3}, 1fr);
-                    gap:10px;
-                    padding:10px;
-                    font-weight:bold;
-                    border-bottom:2px solid #ddd;
-                    margin-bottom:10px;
-                """
+                        display:grid;
+                        grid-template-columns:
+                            repeat({number_of_columns}, 1fr);
+                        gap:10px;
+                        padding:10px;
+                        font-weight:bold;
+                        border-bottom:2px solid #ddd;
+                        margin-bottom:10px;
+                    """
             )
         )
 
+        # ------------------------------------------------------------------
         # Data rows
+        # ------------------------------------------------------------------
+
         for result in results:
+
+            row_cells = [
+
+                ui.div(
+                    result["option"]
+                ),
+
+                *[
+                    ui.div(
+                        f"{score:.2f}"
+                    )
+
+                    for score in result[
+                        "weighted_scores"
+                    ].values()
+                ]
+            ]
+
+            # STAR-MCDA only: Cost
+            if is_star_mcda:
+                row_cells.append(
+                    ui.div(
+                        f"£{result['cost']:,.2f}"
+                    )
+                )
+
+            # Common: Benefit Score
+            row_cells.append(
+                ui.div(
+                    f"{result['benefit_score']:.2f}"
+                )
+            )
+
+            # STAR-MCDA only: VFM Ratio
+            if is_star_mcda:
+                row_cells.append(
+                    ui.div(
+                        f"{result['vfm_ratio']:.2f}"
+                    )
+                )
+
+            # Common: Rank
+            row_cells.append(
+                ui.div(
+                    str(result["rank"])
+                )
+            )
 
             matrix_rows.append(
 
                 ui.div(
 
-                    ui.div(
-                        result["option"]
-                    ),
-
-                    *[
-                        ui.div(
-                            f"{score:.2f}"
-                        )
-
-                        for score in result[
-                            "weighted_scores"
-                        ].values()
-                    ],
-
-                    ui.div(
-                        f"{result['benefit_score']:.2f}"
-                    ),
-
-                    ui.div(
-                        str(result["rank"])
-                    ),
+                    *row_cells,
 
                     style=f"""
-                        display:grid;
-                        grid-template-columns:
-                            repeat({len(criteria_names) + 3}, 1fr);
-                        gap:10px;
-                        padding:10px;
-                        border-bottom:1px solid #eee;
-                    """
+                            display:grid;
+                            grid-template-columns:
+                                repeat({number_of_columns}, 1fr);
+                            gap:10px;
+                            padding:10px;
+                            border-bottom:1px solid #eee;
+                        """
                 )
             )
 
         return ui.div(
-
             *matrix_rows
-
         )
+
+
+    # @render.ui
+    # def decision_matrix():
+    #
+    #     results = get_results()
+    #
+    #     if not results:
+    #
+    #         return ui.p(
+    #             "No results available. Complete the Options, Criteria, "
+    #             "Weighting and Scores pages first."
+    #         )
+    #
+    #     # Get criterion names from the first result
+    #     criteria_names = list(
+    #         results[0]["weighted_scores"].keys()
+    #     )
+    #
+    #     matrix_rows = []
+    #
+    #     # Header row
+    #     matrix_rows.append(
+    #
+    #         ui.div(
+    #
+    #             ui.div(ui.strong("Option")),
+    #
+    #             *[
+    #                 ui.div(
+    #                     ui.strong(name)
+    #                 )
+    #                 for name in criteria_names
+    #             ],
+    #
+    #             ui.div(
+    #                 ui.strong("Benefit Score")
+    #             ),
+    #
+    #             ui.div(
+    #                 ui.strong("Rank")
+    #             ),
+    #
+    #             style=f"""
+    #                 display:grid;
+    #                 grid-template-columns:
+    #                     repeat({len(criteria_names) + 3}, 1fr);
+    #                 gap:10px;
+    #                 padding:10px;
+    #                 font-weight:bold;
+    #                 border-bottom:2px solid #ddd;
+    #                 margin-bottom:10px;
+    #             """
+    #         )
+    #     )
+    #
+    #     # Data rows
+    #     for result in results:
+    #
+    #         matrix_rows.append(
+    #
+    #             ui.div(
+    #
+    #                 ui.div(
+    #                     result["option"]
+    #                 ),
+    #
+    #                 *[
+    #                     ui.div(
+    #                         f"{score:.2f}"
+    #                     )
+    #
+    #                     for score in result[
+    #                         "weighted_scores"
+    #                     ].values()
+    #                 ],
+    #
+    #                 ui.div(
+    #                     f"{result['benefit_score']:.2f}"
+    #                 ),
+    #
+    #                 ui.div(
+    #                     str(result["rank"])
+    #                 ),
+    #
+    #                 style=f"""
+    #                     display:grid;
+    #                     grid-template-columns:
+    #                         repeat({len(criteria_names) + 3}, 1fr);
+    #                     gap:10px;
+    #                     padding:10px;
+    #                     border-bottom:1px solid #eee;
+    #                 """
+    #             )
+    #         )
+    #
+    #     return ui.div(
+    #
+    #         *matrix_rows
+    #
+    #     )
 
 #--------Chart visualisation---------------------------------------------------------------------
 

@@ -17,24 +17,19 @@ def calculate_results(scores, weights):
             weight = weights[criterion_id]["normalised_weight"]
             weighted_score = score * weight
 
-            weighted_scores[                          # we will decide later when we have STAR calculation
-                criterion_data["criterion"]
-            ] = round(
-                weighted_score,
-                2
-            )
+            weighted_scores[criterion_data["criterion"]] = round(weighted_score, 2)
 
             total_benefit_score += weighted_score
 
         results.append({
 
+            "option_id": option_id,
+
             "option": option_data["option"],
+
             "weighted_scores": weighted_scores,
 
-            "benefit_score": round(
-                total_benefit_score,
-                2
-            )
+            "benefit_score": round(total_benefit_score, 2)
 
         })
 
