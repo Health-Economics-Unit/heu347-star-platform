@@ -9,61 +9,18 @@ results_page = ui.div(
 
     ui.h1("Results", class_="page-title"),
 
-    ui.br(),
-
-    ui.p(
-        "The results below combine the scores and weights entered "
-        "during the decision-making process."
-    ),
-
-    ui.p(
-        "The Decision Matrix shows the weighted contribution of each "
-        "criterion to the overall benefit score for every option. "
-        "The Visualisation provides a graphical representation of the same "
-        "results to support discussion and decision-making."
-    ),
-
-    ui.h6(ui.strong(
-        "ℹ️ Note: Results will only appear once options, criteria, "
-        "weights and scores have been completed."),
-        class_="note-text"
-    ),
-
-    ui.br(),
-    ui.br(),
-
+    #-------Dynamic introductory text + note for MCDA / STAR-MCDA-------------
+    #----------How to Interpret the Results-----------------------------
     ui.card(
 
         ui.card_header("How to Interpret the Results"),
 
-        ui.tags.ul(
+        ui.output_ui("results_interpretation"),
 
-            ui.tags.li(
-                "Criteria columns display weighted scores "
-                "(normalised weight × score)."
-            ),
-
-            ui.tags.li(
-                "Benefit Score is the sum of all weighted "
-                "criterion scores for an option."
-            ),
-
-            ui.tags.li(
-                "Options are ranked according to their "
-                "overall Benefit Score."
-            ),
-
-            ui.tags.li(
-                "Higher Benefit Scores indicate stronger "
-                "overall performance against the selected criteria."
-            )
-
-        )
-
+        class_="hse-card"
     ),
 
-    ui.br(),
-
+    #---------------Results summary----------------------
      ui.card(
 
          ui.card_header("Results Summary"),
@@ -71,7 +28,7 @@ results_page = ui.div(
          class_="hse-card"
 
      ),
-
+    #---------Decision Matrix---------------------------
     ui.card(
 
         ui.card_header("Decision Matrix"),
@@ -80,17 +37,14 @@ results_page = ui.div(
 
     ),
 
+    #---------Visualisation---------------------------
     ui.card(
-
         ui.card_header("Visualisation"),
-         ui.p("Each coloured segment represents the weighted contribution "
-              "of a criterion to the overall benefit score. Larger bars "
-              "indicate options with higher total benefit scores."
-         ),
 
-        ui.output_plot("results_chart", height="600px"),
+         ui.output_ui("visualisation_description"),
+
+        ui.output_ui("results_chart_container"),
         class_="hse-card"
-
     ),
 
 #----------------Need to make changes section---------------------------------------------------------

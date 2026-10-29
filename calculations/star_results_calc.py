@@ -57,14 +57,13 @@ def calculate_star_results(
 
         option_id = result["option_id"]
 
-
         # Get the saved cost record for this option
         cost_data = costs.get(option_id, {})
 
         # Total cost has already been calculated on the Cost page
         total_cost = cost_data.get("total_cost", 0)
 
-        # VFM ratio
+        # Value For Money (VFM) ratio - calculating cost per unit of benefit
         vfm_ratio = calculate_vfm_ratio(result["benefit_score"], total_cost)
 
         star_results.append({
@@ -73,19 +72,89 @@ def calculate_star_results(
 
             "option": result["option"],
 
-            "weighted_scores": result[
-                "weighted_scores"
-            ],
+            "weighted_scores": result["weighted_scores"],
 
             "cost": total_cost,
 
-            "benefit_score": result[
-                "benefit_score"
-            ],
+            "benefit_score": result["benefit_score"],
 
-            "vfm_ratio": vfm_ratio,
+            "vfm_ratio": vfm_ratio
 
-            "rank": result["rank"]
         })
 
+        #-----STAR-MCDA ranking-----------
+        # Lower cost per unit of benefit means better VFM
+
+        star_results = sorted(star_results,
+            key=lambda x: x["vfm_ratio"]
+        )
+
+        # Add rank after every option is added
+        for rank, result in enumerate(
+            star_results,
+            start=1
+        ):
+
+            result["rank"] = rank
+
+
     return star_results
+
+
+# ---------- Prepare efficiency frontier data ---------------------------------
+
+def calculate_efficiency_frontier(star_results):
+
+    # Lowest cost per unit of benefit represents better value for money,
+    # so those interventions appear first.
+    ordered_results = sorted(
+        star_results,
+        key=lambda result: result["vfm_ratio"]
+    )
+
+    frontier_results = []
+
+    cumulative_cost = 0
+    cumulative_benefit = 0
+
+    for result in ordered_results:
+
+        start_cost = cumulative_cost
+        start_benefit = cumulative_benefit
+
+        cumulative_cost += float(
+            result.get("cost", 0)
+        )
+
+        cumulative_benefit += float(
+            result.get("benefit_score", 0)
+        )
+
+        frontier_results.append({
+
+            "option_id": result["option_id"],
+
+            "option": result["option"],
+
+            "cost": float(
+                result.get("cost", 0)
+            ),
+
+            "benefit_score": float(
+                result.get("benefit_score", 0)
+            ),
+
+            "vfm_ratio": float(
+                result.get("vfm_ratio", 0)
+            ),
+
+            "rank": result["rank"],
+
+            "start_cost": start_cost,
+            "start_benefit": start_benefit,
+
+            "end_cost": cumulative_cost,
+            "end_benefit": cumulative_benefit
+        })
+
+    return frontier_results

@@ -26,9 +26,23 @@ options_page = ui.div(
          ui.input_action_button(
              "add_option",
              "➕ Add Option",
-              #class_="btn-outline-primary",
              class_="btn-primary"
          ),
+
+        # Pressing Enter in Option Name triggers the Add Option button
+         ui.tags.script("""
+                document.addEventListener("keydown", function(event) {
+                    if (event.target && event.target.id === "option_name" && event.key === "Enter") {
+                        event.preventDefault();
+
+                        const addButton = document.getElementById("add_option");
+
+                        if (addButton) {
+                            addButton.click();
+                        }
+                    }
+                });
+            """),
 
         class_="page-card"
      ),

@@ -27,9 +27,10 @@ import json
 from pathlib import Path
 from datetime import datetime
 from reports.pdf_report import generate_pdf_report
-from core.charts import create_results_chart
+from core.charts import create_results_chart, create_efficiency_frontier
 from core.validators import (validate_decision, validate_options, validate_criteria)
-from calculations.star_results_calc import calculate_total_cost, calculate_star_results
+from calculations.star_results_calc import calculate_total_cost, calculate_star_results, calculate_efficiency_frontier
+from shinywidgets import output_widget, render_widget
 
 #------------------------------------------------------------------------------------------------
 
@@ -2149,6 +2150,65 @@ def server(input, output, session):
 
         return calculate_results(scores,weights)
 
+#------------How to interpret the results section on Results page-----------
+
+    @render.ui
+    def results_interpretation():
+
+        # STAR-MCDA
+        if decision_type_state() == "STAR - MCDA":
+
+            return ui.tags.ul(
+
+                ui.tags.li(
+                    "Criteria columns display weighted scores "
+                    "(normalised weight × score)."
+                ),
+
+                ui.tags.li(
+                    "Benefit Score is the sum of all weighted criterion "
+                    "scores for an intervention."
+                ),
+
+                ui.tags.li(
+                    "Cost represents the total cost of delivering each "
+                    "intervention."
+                ),
+
+                ui.tags.li(
+                    "VFM Ratio represents the cost per unit of benefit. "
+                    "A lower VFM Ratio indicates better value for money."
+                ),
+
+                ui.tags.li(
+                    "Interventions are ranked by their VFM Ratio, with "
+                    "the lowest cost per unit of benefit ranked first."
+                )
+            )
+
+        # MCDA
+        return ui.tags.ul(
+
+            ui.tags.li(
+                "Criteria columns display weighted scores "
+                "(normalised weight × score)."
+            ),
+
+            ui.tags.li(
+                "Benefit Score is the sum of all weighted criterion "
+                "scores for an option."
+            ),
+
+            ui.tags.li(
+                "Options are ranked according to their overall Benefit Score."
+            ),
+
+            ui.tags.li(
+                "Higher Benefit Scores indicate stronger overall "
+                "performance against the selected criteria."
+            )
+        )
+
 #------ Results summary --------------------------------------------------------------------------------------
 
     @render.ui
@@ -2162,11 +2222,55 @@ def server(input, output, session):
                 "No results available."
             )
 
+        # STAR-MCDA
+        if decision_type_state() == "STAR - MCDA":
+
+            results = calculate_star_results(
+                results,
+                costs_state()
+            )
+
+            top_option = results[0]
+
+            return ui.div(
+
+                ui.h4(
+                    ui.strong(
+                        "Best Value for Money"
+                    )
+                ),
+
+                ui.p(
+                    top_option["option"]
+                ),
+
+                ui.p(
+                    f"Benefit Score: "
+                    f"{top_option['benefit_score']:.2f}"
+                ),
+
+                ui.p(
+                    f"Total Cost: "
+                    f"£{top_option['cost']:,.2f}"
+                ),
+
+                ui.p(
+                    f"VFM Ratio: "
+                    f"£{top_option['vfm_ratio']:,.2f} "
+                    f"per benefit point"
+                )
+            )
+
+        # MCDA
         top_option = results[0]
 
         return ui.div(
 
-            ui.h4(ui.strong("Most Preferred Option")),
+            ui.h4(
+                ui.strong(
+                    "Most Preferred Option"
+                )
+            ),
 
             ui.p(
                 top_option["option"]
@@ -2174,9 +2278,8 @@ def server(input, output, session):
 
             ui.p(
                 f"Benefit Score: "
-                f"{top_option['benefit_score']}"
+                f"{top_option['benefit_score']:.2f}"
             )
-
         )
 
 #------ Decision Matrix on Results page--------------------------------------------------------------------------------------
@@ -2187,10 +2290,9 @@ def server(input, output, session):
 
         results = get_results()
 
-        print(
-            "DECISION TYPE IN RESULTS:",
-            repr(decision_type_state())
-        )
+        print("OPTIONS LIST:", options_list())
+        print("SCORES STATE:", scores_state())
+        print("BASE RESULTS:", results)
 
         if not results:
             return ui.p(
@@ -2199,19 +2301,16 @@ def server(input, output, session):
             )
 
         # Check whether this is STAR-MCDA
-        is_star_mcda = (
-                str(decision_type_state()).strip().upper()
-                == "STAR - MCDA"
-        )
+        is_star_mcda = (decision_type_state() == "STAR - MCDA")
 
         # If STAR-MCDA, add Cost and VFM calculations
         if is_star_mcda:
-            results = calculate_star_results(
-                results,
-                costs_state()
-            )
+            print("COSTS STATE:", costs_state())
+            results = calculate_star_results(results, costs_state())
 
-        # Get criterion names from the first result
+            print("STAR RESULTS:", results)
+
+        # Get criterion names from the first result-----------
         criteria_names = list(
             results[0]["weighted_scores"].keys()
         )
@@ -2225,7 +2324,6 @@ def server(input, output, session):
             number_of_columns += 2
 
         matrix_rows = []
-
 
         #-------------Header row---------------
         header_cells = [
@@ -2243,11 +2341,10 @@ def server(input, output, session):
         ]
 
         #----------STAR-MCDA only-------------
+
         if is_star_mcda:
             header_cells.append(
-                ui.div(
-                    ui.strong("Costs")
-                )
+                ui.div(ui.strong("Costs"))
             )
 
         # Common column
@@ -2258,18 +2355,13 @@ def server(input, output, session):
         )
 
         # STAR-MCDA only
-        if is_star_mcda:
-            header_cells.append(
-                ui.div(
-                    ui.strong("VFM Ratio")
-                )
+        if is_star_mcda: header_cells.append(
+                ui.div(ui.strong("VFM Ratio"))
             )
 
         # Common column
         header_cells.append(
-            ui.div(
-                ui.strong("Rank")
-            )
+            ui.div(ui.strong("Rank"))
         )
 
         matrix_rows.append(
@@ -2280,8 +2372,7 @@ def server(input, output, session):
 
                 style=f"""
                         display:grid;
-                        grid-template-columns:
-                            repeat({number_of_columns}, 1fr);
+                        grid-template-columns: repeat({number_of_columns}, 1fr);
                         gap:10px;
                         padding:10px;
                         font-weight:bold;
@@ -2291,9 +2382,7 @@ def server(input, output, session):
             )
         )
 
-        # ------------------------------------------------------------------
-        # Data rows
-        # ------------------------------------------------------------------
+        # Data rows---------------------------------
 
         for result in results:
 
@@ -2317,31 +2406,23 @@ def server(input, output, session):
             # STAR-MCDA only: Cost
             if is_star_mcda:
                 row_cells.append(
-                    ui.div(
-                        f"£{result['cost']:,.2f}"
-                    )
+                    ui.div(f"£{result['cost']:,.2f}")
                 )
 
             # Common: Benefit Score
             row_cells.append(
-                ui.div(
-                    f"{result['benefit_score']:.2f}"
-                )
+                ui.div(f"{result['benefit_score']:.2f}")
             )
 
             # STAR-MCDA only: VFM Ratio
             if is_star_mcda:
                 row_cells.append(
-                    ui.div(
-                        f"{result['vfm_ratio']:.2f}"
-                    )
+                    ui.div(f"{result['vfm_ratio']:.2f}")
                 )
 
             # Common: Rank
             row_cells.append(
-                ui.div(
-                    str(result["rank"])
-                )
+                ui.div(str(result["rank"]))
             )
 
             matrix_rows.append(
@@ -2352,8 +2433,7 @@ def server(input, output, session):
 
                     style=f"""
                             display:grid;
-                            grid-template-columns:
-                                repeat({number_of_columns}, 1fr);
+                            grid-template-columns: repeat({number_of_columns}, 1fr);
                             gap:10px;
                             padding:10px;
                             border-bottom:1px solid #eee;
@@ -2365,120 +2445,78 @@ def server(input, output, session):
             *matrix_rows
         )
 
+#-----Visualisation description on Results page--------------------------------
+    @render.ui
+    def visualisation_description():
 
-    # @render.ui
-    # def decision_matrix():
-    #
-    #     results = get_results()
-    #
-    #     if not results:
-    #
-    #         return ui.p(
-    #             "No results available. Complete the Options, Criteria, "
-    #             "Weighting and Scores pages first."
-    #         )
-    #
-    #     # Get criterion names from the first result
-    #     criteria_names = list(
-    #         results[0]["weighted_scores"].keys()
-    #     )
-    #
-    #     matrix_rows = []
-    #
-    #     # Header row
-    #     matrix_rows.append(
-    #
-    #         ui.div(
-    #
-    #             ui.div(ui.strong("Option")),
-    #
-    #             *[
-    #                 ui.div(
-    #                     ui.strong(name)
-    #                 )
-    #                 for name in criteria_names
-    #             ],
-    #
-    #             ui.div(
-    #                 ui.strong("Benefit Score")
-    #             ),
-    #
-    #             ui.div(
-    #                 ui.strong("Rank")
-    #             ),
-    #
-    #             style=f"""
-    #                 display:grid;
-    #                 grid-template-columns:
-    #                     repeat({len(criteria_names) + 3}, 1fr);
-    #                 gap:10px;
-    #                 padding:10px;
-    #                 font-weight:bold;
-    #                 border-bottom:2px solid #ddd;
-    #                 margin-bottom:10px;
-    #             """
-    #         )
-    #     )
-    #
-    #     # Data rows
-    #     for result in results:
-    #
-    #         matrix_rows.append(
-    #
-    #             ui.div(
-    #
-    #                 ui.div(
-    #                     result["option"]
-    #                 ),
-    #
-    #                 *[
-    #                     ui.div(
-    #                         f"{score:.2f}"
-    #                     )
-    #
-    #                     for score in result[
-    #                         "weighted_scores"
-    #                     ].values()
-    #                 ],
-    #
-    #                 ui.div(
-    #                     f"{result['benefit_score']:.2f}"
-    #                 ),
-    #
-    #                 ui.div(
-    #                     str(result["rank"])
-    #                 ),
-    #
-    #                 style=f"""
-    #                     display:grid;
-    #                     grid-template-columns:
-    #                         repeat({len(criteria_names) + 3}, 1fr);
-    #                     gap:10px;
-    #                     padding:10px;
-    #                     border-bottom:1px solid #eee;
-    #                 """
-    #             )
-    #         )
-    #
-    #     return ui.div(
-    #
-    #         *matrix_rows
-    #
-    #     )
+        # STAR-MCDA
+        if decision_type_state() == "STAR - MCDA":
 
-#--------Chart visualisation---------------------------------------------------------------------
+            return ui.p(
+                "Each coloured area represents an intervention. "
+                "Interventions are ordered by value for money and plotted "
+                "cumulatively by cost and benefit. Interventions with a lower cost per unit "
+                "of benefit indicates better value for money."
+            )
+
+        # MCDA
+        return ui.p(
+            "Each coloured segment represents the weighted contribution "
+            "of a criterion to the overall benefit score. Larger bars "
+            "indicate options with higher total benefit scores."
+        )
+
+
+#--------Chart visualisation---------------------------------------------------
+
+    #Height of the chart on the results page is controlled here
+    @render.ui
+    def results_chart_container():
+
+        #STAR-MCDA efficiency frontier chart
+        if decision_type_state() == "STAR - MCDA":
+
+            return ui.div(
+                output_widget("efficiency_frontier_chart"),
+                style="height:600px;"
+            )
+
+        #MCDA bar chart
+        return ui.output_plot("mcda_results_chart",
+            height="600px"
+        )
+
+# ---------MCDA bar chart -----------------------------------------
 
     @render.plot
-    def results_chart():
+    def mcda_results_chart():
 
         results = get_results()
 
-        print(results)
+        if not results: return None
 
-        return create_results_chart(
-            results,
-            chart_colours
-        )
+        return create_results_chart(results, chart_colours)
+
+
+# -------- STAR-MCDA efficiency frontier ----------------------
+
+    @render_widget
+    def efficiency_frontier_chart():
+
+        results = get_results()
+
+        if not results:
+
+            return create_efficiency_frontier(
+                [],
+                chart_colours
+            )
+
+        star_results = calculate_star_results(results, costs_state())
+
+        frontier_results = calculate_efficiency_frontier(star_results)
+
+        return create_efficiency_frontier(frontier_results, chart_colours)
 
 #--------Navigation---------------------------------------------------------------------
 
