@@ -17,7 +17,7 @@ from modules.scores import scores_page
 from modules.weighting import weighting_page
 from modules.star_cost import star_cost_page
 from modules.results import results_page
-from modules.components import page_header,app_banner, app_footer
+from modules.components import page_header, app_banner, app_footer, results_nav_card
 from uuid import uuid4
 from calculations.weights_calc import normalise_weights
 from calculations.mcda_results_calc import calculate_results
@@ -284,7 +284,6 @@ def server(input, output, session):
 
     scores_state = reactive.value({})
 
-
 #----------- Read the uploaded JSON and restore all reactive states-------------------------------------------
 
     @reactive.effect
@@ -430,7 +429,7 @@ def server(input, output, session):
 
 #----------Download(JSON file) function for every page--------------------------------
 
-#-----------Project JSON download-----------------------------------------------------
+    #-----------JSON download------------------
 
     def generate_project_json():
         return json.dumps(
@@ -438,13 +437,11 @@ def server(input, output, session):
             indent=4
         )
 
-
     def project_filename():
         return (
             f"project_"
             f"{datetime.now():%Y%m%d_%H%M}.json"
         )
-
 
     @render.download(
         filename=project_filename,
@@ -882,55 +879,9 @@ def server(input, output, session):
                     duration=2
                 )
 
-
     for criterion in default_criteria:
 
         register_default_criterion(criterion)
-    
-    #------------------Predefined Criteria Cards-----------------------------------------------
-
-    # @reactive.effect
-    # @reactive.event(input.add_health_benefit)
-    # def add_health_benefit():
-    #     if add_criteria("Health Benefits"):
-    #         ui.notification_show(
-    #             "Health Benefits added.",
-    #             type="message",
-    #             duration=2
-    #         )
-    #
-    #
-    # @reactive.effect
-    # @reactive.event(input.add_health_inequalities)
-    # def add_health_inequalities():
-    #     if add_criteria("Health Inequalities"):
-    #         ui.notification_show(
-    #             "Health Inequalities added.",
-    #             type="message",
-    #             duration=2
-    #         )
-    #
-    #
-    # @reactive.effect
-    # @reactive.event(input.add_safety)
-    # def add_safety():
-    #     if add_criteria("Safety"):
-    #         ui.notification_show(
-    #             "Safety added.",
-    #             type="message",
-    #             duration=2
-    #         )
-    #
-    #
-    # @reactive.effect
-    # @reactive.event(input.add_patient_experience)
-    # def add_patient_experience():
-    #     if add_criteria("Patient Experience"):
-    #         ui.notification_show(
-    #             "Patient Experience added.",
-    #             type="message",
-    #             duration=2
-    #         )
 
 #----logic of displaying cost based on star_mcda/mcda decision type--------------------------
 
@@ -952,17 +903,6 @@ def server(input, output, session):
                 type="message",
                 duration=2
             )
-
-
-    # @reactive.effect
-    # @reactive.event(input.add_feasibility)
-    # def add_feasibility():
-    #     if add_criteria("Feasibility"):
-    #         ui.notification_show(
-    #             "Feasibility added.",
-    #             type="message",
-    #             duration=2
-    #         )
 
     #-----Add custom criterion------------------------------------------------------------------
 
@@ -1905,7 +1845,6 @@ def server(input, output, session):
 #-----------------------------------------------------------------------------------------------------------
 #--------------------------------------Scores card----------------------------------------------------------
 #------------------------------------------------------------------------------------------------------------
-
     @render.ui
     def scores_matrix():
         current_options = options_list()
@@ -2149,7 +2088,45 @@ def server(input, output, session):
             "main_nav",
             selected="star_cost"
         )
+# -------- Restore/update score inputs from scores_state ---------------------
 
+    @reactive.effect
+    def restore_score_inputs():
+
+        saved_scores = scores_state()
+
+        if not saved_scores:
+            return
+
+        for option in options_list():
+
+            option_id = option["id"]
+
+            for criterion in criteria_list():
+
+                criterion_id = criterion["id"]
+
+                saved_score = (
+                    saved_scores
+                    .get(option_id, {})
+                    .get("criteria_scores", {})
+                    .get(criterion_id, {})
+                    .get("score", 0)
+                )
+
+                input_id = (
+                    f"score_{option_id}_{criterion_id}"
+                )
+
+                try:
+                    input[input_id]()
+                except KeyError:
+                    continue
+
+                ui.update_numeric(
+                    input_id,
+                    value=saved_score
+                )
 
 # -----------------------------------------------------------------------------------------------------------
 # --------------------------------------Results card----------------------------------------------------------
@@ -2534,6 +2511,21 @@ def server(input, output, session):
 
 #--------Navigation---------------------------------------------------------------------
 
+    # Conditional Cost navigation card
+    @render.ui
+    def results_cost_card():
+
+        if decision_type_state() == "STAR - MCDA":
+
+            return results_nav_card(
+                "edit_cost",
+                "💷",
+                "Cost"
+            )
+
+        return None
+
+    # Navigation cards on Results page
     @reactive.effect
     @reactive.event(input.edit_decision)
     def edit_decision():
@@ -2564,6 +2556,14 @@ def server(input, output, session):
         ui.update_navset(
             "main_nav",
             selected="weighting"
+        )
+
+    @reactive.effect
+    @reactive.event(input.edit_cost)
+    def edit_cost():
+        ui.update_navset(
+            "main_nav",
+            selected="star_cost"
         )
 
     @reactive.effect

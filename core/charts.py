@@ -145,9 +145,8 @@ def create_efficiency_frontier(
 
     fig = go.Figure()
 
-    # ------------------------------------------------------------------
+
     # No results
-    # ------------------------------------------------------------------
 
     if not frontier_results:
 
@@ -184,9 +183,7 @@ def create_efficiency_frontier(
         return fig
 
 
-    # ------------------------------------------------------------------
     # Filled intervention triangles
-    # ------------------------------------------------------------------
 
     for index, result in enumerate(frontier_results):
 
@@ -259,9 +256,8 @@ def create_efficiency_frontier(
         )
 
 
-    # ------------------------------------------------------------------
+
     # Continuous efficiency frontier line
-    # ------------------------------------------------------------------
 
     frontier_x = [
         frontier_results[0]["start_cost"]
@@ -283,63 +279,55 @@ def create_efficiency_frontier(
 
     fig.add_trace(
         go.Scatter(
-            x=frontier_x,
-            y=frontier_y,
-
-            mode="lines",
-
-            line=dict(
-                color="#333333",
-                width=2
-            ),
-
-            hoverinfo="skip",
-
-            showlegend=False
-        )
-    )
-
-
-    # ------------------------------------------------------------------
-    # Intervention labels
-    # ------------------------------------------------------------------
-
-    fig.add_trace(
-        go.Scatter(
             x=[
-                result["end_cost"]
-                for result in frontier_results
+                start_cost,
+                end_cost,
+                end_cost,
+                start_cost,
+                start_cost
             ],
 
             y=[
-                result["end_benefit"]
-                for result in frontier_results
+                start_benefit,
+                start_benefit,
+                end_benefit,
+                start_benefit,
+                start_benefit
             ],
 
-            mode="text",
+            mode="lines",
 
-            text=[
-                result["option"]
-                for result in frontier_results
-            ],
+            fill="toself",
+            fillcolor=colour,
 
-            textposition="top center",
-
-            textfont=dict(
-                size=11,
-                color="#333333"
+            line=dict(
+                color=colour,
+                width=0
             ),
 
-            hoverinfo="skip",
+            opacity=0.80,
 
-            showlegend=False
+            name=result["option"],
+
+            text=[
+                hover_text,
+                hover_text,
+                hover_text,
+                hover_text,
+                hover_text
+            ],
+
+            hovertemplate=(
+                "%{text}"
+                "<extra></extra>"
+            ),
+
+            # Allow hover over both the filled area and points
+            hoveron="fills+points"
         )
     )
 
-
-    # ------------------------------------------------------------------
     # Layout
-    # ------------------------------------------------------------------
 
     fig.update_layout(
 
@@ -348,6 +336,8 @@ def create_efficiency_frontier(
         #     x=0.01,
         #     xanchor="center"
         # ),
+
+        height=550,
 
         xaxis=dict(
             title="Cumulative Cost (£)",
@@ -413,7 +403,7 @@ def create_efficiency_frontier(
         margin=dict(
             l=80,
             r=180,
-            t=30,
+            t=85,       # gap between the legend and the plot zoom features etc
             b=70
         )
     )

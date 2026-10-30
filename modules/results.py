@@ -75,7 +75,9 @@ results_page = ui.div(
                 "edit_scores","📝", "Scores"
             ),
 
-            col_widths=(1,1,1,1),
+            ui.output_ui("results_cost_card"),
+
+            col_widths=(1,1,1,1,1),
             gap="10px"
 
         ),
