@@ -1965,35 +1965,49 @@ def server(input, output, session):
                     ),
 
                     *[
+                        # validation to accept the scores value from 0-100 only
+                        ui.div(
 
-                        ui.input_numeric(
+                            ui.input_numeric(
 
-                            f"score_"
-                            f"{option_id}_"
-                            f"{criterion['id']}",
+                                f"score_{option_id}_{criterion['id']}",
 
-                            None,
+                                None,
 
-                            value=(
-                                saved_scores
-                                .get(option_id, {})
-                                .get(
-                                    "criteria_scores",
-                                    {}
-                                )
-                                .get(
-                                    criterion["id"],
-                                    {}
-                                )
-                                .get(
-                                    "score",
-                                    0
-                                )
+                                value=(
+                                    saved_scores
+                                    .get(option_id, {})
+                                    .get("criteria_scores", {})
+                                    .get(criterion["id"], {})
+                                    .get("score", 0)
+                                ),
+
+                                min=0,
+                                max=100,
+                                step=1
                             ),
 
-                            min=0,
-                            max=100,
-                            step=1
+                            # oninput is while typing the scores in input box
+                            oninput="""
+                    const input = event.target;
+
+                    if (input.type === 'number' && input.value !== '') {
+
+                        if (Number(input.value) > 100) {
+                            input.value = 100;
+                            input.dispatchEvent(
+                                new Event('change', { bubbles: true })
+                            );
+                        }
+
+                        if (Number(input.value) < 0) {
+                            input.value = 0;
+                            input.dispatchEvent(
+                                new Event('change', { bubbles: true })
+                            );
+                        }
+                    }
+                """
                         )
 
                         for criterion in current_criteria
