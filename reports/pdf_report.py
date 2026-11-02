@@ -10,7 +10,7 @@ from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.platypus import (SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle, Image, KeepTogether)
-
+from matplotlib.ticker import FuncFormatter
 
 def generate_pdf_report(
     project_name,
@@ -212,6 +212,10 @@ def generate_pdf_report(
         "decision_type",
         ""
     ) or "Not selected"
+
+    is_star_mcda = (
+            decision_type == "STAR - MCDA"
+    )
 
     decision_data = [
         [
@@ -512,9 +516,98 @@ def generate_pdf_report(
     story.append(scores_table)
     story.append(PageBreak())
 
-    #------------------------------------------------------------------------------------------------------
-    # 6. Decision matrix ----------------------------------------------------------------------------------------------
-    #------------------------------------------------------------------------------------------------------
+    # #------------------------------------------------------------------------------------------------------
+    # # 6. Decision matrix ----------------------------------------------------------------------------------------------
+    # #------------------------------------------------------------------------------------------------------
+    #
+    # story.append(
+    #     Paragraph(
+    #         "6. Decision Matrix",
+    #         heading_style
+    #     )
+    # )
+    #
+    # if results:
+    #
+    #     result_criteria = list(
+    #         results[0]["weighted_scores"].keys()
+    #     )
+    #
+    #     results_header = [
+    #         Paragraph("<b>Option</b>", table_header_style)
+    #     ]
+    #
+    #     results_header.extend(
+    #         Paragraph(
+    #             f"<b>{criterion}</b>",
+    #             table_header_style
+    #         )
+    #         for criterion in result_criteria
+    #     )
+    #
+    #     results_header.extend(
+    #         [
+    #             Paragraph("<b>Benefit score</b>", table_header_style),
+    #             Paragraph("<b>Rank</b>", table_header_style)
+    #         ]
+    #     )
+    #
+    #     results_data = [results_header]
+    #
+    #     for result in results:
+    #
+    #         result_row = [
+    #             Paragraph(
+    #                 str(result["option"]),
+    #                 body_style
+    #             )
+    #         ]
+    #
+    #         result_row.extend(
+    #             f"{result['weighted_scores'].get(criterion, 0):.2f}"
+    #             for criterion in result_criteria
+    #         )
+    #
+    #         result_row.extend(
+    #             [
+    #                 f"{result['benefit_score']:.2f}",
+    #                 str(result["rank"])
+    #             ]
+    #         )
+    #
+    #         results_data.append(result_row)
+    #
+    #     total_result_columns = (
+    #         len(result_criteria) + 3
+    #     )
+    #
+    #     results_table = Table(
+    #         results_data,
+    #         colWidths=[
+    #             47 * mm
+    #         ] + [
+    #             190 * mm / max(
+    #                 total_result_columns - 1,
+    #                 1
+    #             )
+    #             for _ in range(
+    #                 total_result_columns - 1
+    #             )
+    #         ],
+    #         repeatRows=1
+    #     )
+    #
+    #     apply_standard_table_style(
+    #         results_table,
+    #         project_colour
+    #     )
+    #
+    #     story.append(results_table)
+    #     story.append(Spacer(1, 8 * mm))
+
+    # ------------------------------------------------------------------------------------------------------
+    # 6. Decision Matrix
+    # ------------------------------------------------------------------------------------------------------
 
     story.append(
         Paragraph(
@@ -529,8 +622,13 @@ def generate_pdf_report(
             results[0]["weighted_scores"].keys()
         )
 
+        # ---------------- Header ----------------
+
         results_header = [
-            Paragraph("<b>Option</b>", table_header_style)
+            Paragraph(
+                "<b>Option</b>",
+                table_header_style
+            )
         ]
 
         results_header.extend(
@@ -541,14 +639,45 @@ def generate_pdf_report(
             for criterion in result_criteria
         )
 
-        results_header.extend(
-            [
-                Paragraph("<b>Benefit score</b>", table_header_style),
-                Paragraph("<b>Rank</b>", table_header_style)
-            ]
+        # STAR-MCDA: Cost column
+        if is_star_mcda:
+            results_header.append(
+                Paragraph(
+                    "<b>Costs</b>",
+                    table_header_style
+                )
+            )
+
+        # Common Benefit Score
+        results_header.append(
+            Paragraph(
+                "<b>Benefit score</b>",
+                table_header_style
+            )
         )
 
-        results_data = [results_header]
+        # STAR-MCDA: VFM Ratio
+        if is_star_mcda:
+            results_header.append(
+                Paragraph(
+                    "<b>VFM Ratio</b>",
+                    table_header_style
+                )
+            )
+
+        # Common Rank
+        results_header.append(
+            Paragraph(
+                "<b>Rank</b>",
+                table_header_style
+            )
+        )
+
+        results_data = [
+            results_header
+        ]
+
+        # ---------------- Rows ----------------
 
         for result in results:
 
@@ -564,32 +693,61 @@ def generate_pdf_report(
                 for criterion in result_criteria
             )
 
-            result_row.extend(
-                [
-                    f"{result['benefit_score']:.2f}",
-                    str(result["rank"])
-                ]
+            # STAR-MCDA: Cost
+            if is_star_mcda:
+                result_row.append(
+                    f"£{result.get('cost', 0):,.2f}"
+                )
+
+            # Common Benefit Score
+            result_row.append(
+                f"{result['benefit_score']:.2f}"
             )
 
-            results_data.append(result_row)
+            # STAR-MCDA: VFM Ratio
+            if is_star_mcda:
+                result_row.append(
+                    f"£{result.get('vfm_ratio', 0):,.2f}"
+                )
 
+            # Common Rank
+            result_row.append(
+                str(result["rank"])
+            )
+
+            results_data.append(
+                result_row
+            )
+
+        # Number of columns
         total_result_columns = (
-            len(result_criteria) + 3
+                len(result_criteria) + 3
+        )
+
+        # STAR adds Cost + VFM Ratio
+        if is_star_mcda:
+            total_result_columns += 2
+
+        # Keep the first Option column slightly wider
+        remaining_width = 198 * mm
+
+        other_column_width = (
+                remaining_width
+                / max(total_result_columns - 1, 1)
         )
 
         results_table = Table(
             results_data,
+
             colWidths=[
-                47 * mm
-            ] + [
-                190 * mm / max(
-                    total_result_columns - 1,
-                    1
-                )
-                for _ in range(
+                          47 * mm
+                      ] + [
+                          other_column_width
+                          for _ in range(
                     total_result_columns - 1
                 )
-            ],
+                      ],
+
             repeatRows=1
         )
 
@@ -598,8 +756,13 @@ def generate_pdf_report(
             project_colour
         )
 
-        story.append(results_table)
-        story.append(Spacer(1, 8 * mm))
+        story.append(
+            results_table
+        )
+
+        story.append(
+            Spacer(1, 8 * mm)
+        )
 
         #------------------------------------------------------------------------------------------------------
         # 7. Preferred option----------------------------------------------------------------------------------
@@ -607,19 +770,47 @@ def generate_pdf_report(
 
         top_option = results[0]
 
+        # STAR-MCDA
+        if is_star_mcda:
+
+            preferred_title = (
+                "7. Best Value for Money"
+            )
+
+            preferred_text = (
+                f"<b>{top_option['option']}</b><br/>"
+                f"Benefit score: "
+                f"{top_option['benefit_score']:.2f}<br/>"
+                f"Total cost: "
+                f"£{top_option['cost']:,.2f}<br/>"
+                f"VFM Ratio: "
+                f"£{top_option['vfm_ratio']:,.2f} "
+                f"per benefit point"
+            )
+
+        # MCDA
+        else:
+
+            preferred_title = (
+                "7. Most Preferred Option"
+            )
+
+            preferred_text = (
+                f"<b>{top_option['option']}</b><br/>"
+                f"Benefit score: "
+                f"{top_option['benefit_score']:.2f}"
+            )
+
         story.append(
             KeepTogether(
                 [
                     Paragraph(
-                        "7. Most Preferred Option",
+                        preferred_title,
                         heading_style
                     ),
+
                     Paragraph(
-                        (
-                            f"<b>{top_option['option']}</b><br/>"
-                            f"Benefit score: "
-                            f"{top_option['benefit_score']:.2f}<br/>"
-                        ),
+                        preferred_text,
                         note_style
                     )
                 ]
@@ -628,32 +819,75 @@ def generate_pdf_report(
 
         story.append(PageBreak())
 
-        #------------------------------------------------------------------------------------------------------
-        # 8. Visualisation-------------------------------------------------------------------------------------
-        #------------------------------------------------------------------------------------------------------
+        # ------------------------------------------------------------------------------------------------------
+        # 8. Visualisation
+        # ------------------------------------------------------------------------------------------------------
 
-        story.append(
-            Paragraph(
-                "8. Contribution of Criteria to Overall Benefit Score",
-                heading_style
+        # STAR-MCDA
+        if is_star_mcda:
+
+            story.append(
+                Paragraph(
+                    "8. Visualisation",
+                    #"8. Efficiency Frontier ",
+                    heading_style
+                )
             )
-        )
 
-        chart_buffer = create_results_chart(
-            results=results,
-            chart_colours=chart_colours,
-            project_colour=project_colour
-        )
+            story.append(
+                Paragraph(
+                    (
+                        "Interventions are ordered by value for money and plotted "
+                        "cumulatively by cost and benefit. Interventions with a lower "
+                        "cost per unit of benefit indicate better value for money."
+                    ),
+                    body_style
+                )
+            )
 
-        chart_image = Image(
-            chart_buffer,
-            width=240 * mm,
-            height=125 * mm
-        )
+            frontier_chart_buffer = create_efficiency_frontier_chart(
+                results=results,
+                chart_colours=chart_colours,
+                project_colour=project_colour
+            )
 
-        chart_image.hAlign = "CENTER"
+            frontier_image = Image(
+                frontier_chart_buffer,
+                width=235 * mm,
+                height=120 * mm
+            )
 
-        story.append(chart_image)
+            frontier_image.hAlign = "CENTER"
+
+            story.append(frontier_image)
+
+
+        # MCDA
+        else:
+
+            story.append(
+                Paragraph(
+                    "8. Visualisation",
+                    #"8. Contribution of Criteria to Overall Benefit Score",
+                    heading_style
+                )
+            )
+
+            chart_buffer = create_results_chart(
+                results=results,
+                chart_colours=chart_colours,
+                project_colour=project_colour
+            )
+
+            chart_image = Image(
+                chart_buffer,
+                width=240 * mm,
+                height=125 * mm
+            )
+
+            chart_image.hAlign = "CENTER"
+
+            story.append(chart_image)
 
     else:
 
@@ -882,6 +1116,158 @@ def create_results_chart(
 
     return chart_buffer
 
+# ----------------STAR-MCDA Efficiency Frontier for PDF-------------------------------
+
+def create_efficiency_frontier_chart(
+    results,
+    chart_colours,
+    project_colour
+):
+
+    chart_buffer = BytesIO()
+
+    if not results:
+        fig, ax = plt.subplots(
+            figsize=(12, 5.5)
+        )
+
+        ax.text(
+            0.5,
+            0.5,
+            "No STAR-MCDA results available.",
+            ha="center",
+            va="center",
+            transform=ax.transAxes
+        )
+
+        ax.axis("off")
+
+        fig.savefig(
+            chart_buffer,
+            format="png",
+            dpi=180,
+            bbox_inches="tight"
+        )
+
+        plt.close(fig)
+
+        chart_buffer.seek(0)
+
+        return chart_buffer
+
+    cumulative_cost = 0
+    cumulative_benefit = 0
+
+    # frontier_x = [0]
+    # frontier_y = [0]
+
+    fig, ax = plt.subplots(
+        figsize=(12, 5.5)
+    )
+
+    for index, result in enumerate(results):
+
+        start_cost = cumulative_cost
+        start_benefit = cumulative_benefit
+
+        cumulative_cost += result.get(
+            "cost",
+            0
+        )
+
+        cumulative_benefit += result.get(
+            "benefit_score",
+            0
+        )
+
+        colour = chart_colours[
+            index % len(chart_colours)
+        ]
+
+        # Filled intervention area
+        ax.fill(
+            [
+                start_cost,
+                cumulative_cost,
+                cumulative_cost
+            ],
+            [
+                start_benefit,
+                start_benefit,
+                cumulative_benefit
+            ],
+            color=colour,
+            alpha=0.8,
+            label=result["option"]
+        )
+
+        # frontier_x.append(
+        #     cumulative_cost
+        # )
+        #
+        # frontier_y.append(
+        #     cumulative_benefit
+        # )
+
+    # # Continuous frontier line
+    # ax.plot(
+    #     frontier_x,
+    #     frontier_y,
+    #     color="#333333",
+    #     linewidth=2
+    # )
+
+    ax.set_title(
+        "Efficiency Frontier",
+        fontsize=14,
+        fontweight="bold",
+        color=project_colour,
+        pad=15
+    )
+
+    ax.set_xlabel(
+        "Cumulative Cost (£)"
+    )
+
+    ax.set_ylabel(
+        "Cumulative Benefit Score"
+    )
+
+    ax.xaxis.set_major_formatter(
+        FuncFormatter(
+            lambda value, position:
+            f"£{value:,.0f}"
+        )
+    )
+
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+
+    ax.grid(False)
+
+    ax.legend(
+        title="Interventions",
+        bbox_to_anchor=(1.02, 1),
+        loc="upper left",
+        frameon=False
+    )
+
+    fig.tight_layout()
+
+    fig.savefig(
+        chart_buffer,
+        format="png",
+        dpi=180,
+        bbox_inches="tight"
+    )
+
+    plt.close(fig)
+
+    chart_buffer.seek(0)
+
+    return chart_buffer
+
+#-------------page footer-------------------------------------------------------
 
 def add_page_footer(
     canvas,

@@ -2292,6 +2292,7 @@ def server(input, output, session):
             )
 
         # Check whether this is STAR-MCDA
+
         is_star_mcda = (decision_type_state() == "STAR - MCDA")
 
         # If STAR-MCDA, add Cost and VFM calculations
@@ -2301,7 +2302,9 @@ def server(input, output, session):
 
             print("STAR RESULTS:", results)
 
+
         # Get criterion names from the first result-----------
+
         criteria_names = list(
             results[0]["weighted_scores"].keys()
         )
@@ -2503,9 +2506,22 @@ def server(input, output, session):
                 chart_colours
             )
 
+        print(
+            "\nBASE RESULTS:",
+            [result["option"] for result in results]
+        )
+
         star_results = calculate_star_results(results, costs_state())
+        print(
+            "\nSTAR RESULTS:",
+            [result["option"] for result in star_results]
+        )
 
         frontier_results = calculate_efficiency_frontier(star_results)
+        print(
+            "\nFRONTIER RESULTS:",
+            [result["option"] for result in frontier_results]
+        )
 
         return create_efficiency_frontier(frontier_results, chart_colours)
 
@@ -2585,10 +2601,14 @@ def server(input, output, session):
     )
     def download_report():
         decision = decision_context()
+        decision_type = decision_type_state()
         options = options_list()
         criteria = criteria_list()
         weights = weights_state()
+        costs = costs_state()
         scores = scores_state()
+
+        # MCDA results
         results = get_results()
 
         if not decision:
@@ -2597,7 +2617,6 @@ def server(input, output, session):
                 type="error",
                 duration=3
             )
-
             return
 
         if not options:
@@ -2606,7 +2625,6 @@ def server(input, output, session):
                 type="error",
                 duration=3
             )
-
             return
 
         if not criteria:
@@ -2615,7 +2633,6 @@ def server(input, output, session):
                 type="error",
                 duration=3
             )
-
             return
 
         if not weights:
@@ -2624,7 +2641,6 @@ def server(input, output, session):
                 type="error",
                 duration=3
             )
-
             return
 
         if not scores:
@@ -2633,7 +2649,6 @@ def server(input, output, session):
                 type="error",
                 duration=3
             )
-
             return
 
         if not results:
@@ -2642,9 +2657,24 @@ def server(input, output, session):
                 type="error",
                 duration=3
             )
-
             return
 
+        # STAR-MCDA requires saved costs
+        if decision_type == "STAR - MCDA":
+
+            if not costs:
+                ui.notification_show(
+                    "Save the intervention costs before downloading the STAR-MCDA report.",
+                    type="error",
+                    duration=3
+                )
+                return
+
+            # Add Cost, VFM Ratio and STAR ranking
+            results = calculate_star_results(
+                results,
+                costs
+            )
 
         ui.notification_show(
             "✅ Generating report....",
