@@ -1,4 +1,4 @@
-# Results summary, decision matrix and visualisation chart
+# Results summary - decision matrix and visualisation chart
 
 def calculate_results(scores, weights):
 

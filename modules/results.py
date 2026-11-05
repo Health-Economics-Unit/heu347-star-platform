@@ -20,14 +20,8 @@ results_page = ui.div(
         class_="hse-card"
     ),
 
-    #---------------Results summary----------------------
-     ui.card(
+    ##---------------Results summary----------------------
 
-         ui.card_header("Results Summary"),
-         ui.output_ui("results_summary"),
-         class_="hse-card"
-
-     ),
     #---------Decision Matrix---------------------------
     ui.card(
 

@@ -1481,17 +1481,17 @@ def server(input, output, session):
 
             saved_cost_per_person = saved_option.get(
                 "cost_per_person",
-                0
+                ""
             )
 
             saved_people_receiving = saved_option.get(
                 "people_receiving",
-                0
+                ""
             )
 
             saved_total_cost = saved_option.get(
                 "total_cost",
-                0
+                ""
             )
 
             matrix_rows.append(
@@ -1540,7 +1540,12 @@ def server(input, output, session):
                     ui.input_text(
                         f"total_cost_{option_id}",
                         label=None,
-                        value=f"£{saved_total_cost:,.2f}"
+                        value=(
+                            f"£{float(saved_total_cost):,.2f}"
+                            if saved_total_cost not in ("", None)
+                            else ""
+                        ),
+                        placeholder="Calculated automatically"
                     ),
 
                     style="""
@@ -1918,12 +1923,12 @@ def server(input, output, session):
                                     .get(option_id, {})
                                     .get("criteria_scores", {})
                                     .get(criterion["id"], {})
-                                    .get("score", 0)
+                                    .get("score", None)
                                 ),
 
                                 min=0,
                                 max=100,
-                                step=1
+                                step=1,
                             ),
 
                             # oninput is while typing the scores in input box
@@ -1992,9 +1997,9 @@ def server(input, output, session):
 
                 except KeyError:
 
-                    score = 0
+                    score = None
 
-                if score is None: score = 0
+                if score is None: return None
 
                 scores[option_id][
                     "criteria_scores"
@@ -2017,6 +2022,15 @@ def server(input, output, session):
 
     def save_scores():
         scores = build_scores_record()
+
+        if scores is None:
+            ui.notification_show(
+                "Please enter a score between 0 and 100 for all options and criteria.",
+                type="error",
+                duration=3
+            )
+            return
+
         scores_state.set(scores)                #save for use within the project
 
         print("\n Scores saved:", scores_state())   #test
@@ -2050,6 +2064,14 @@ def server(input, output, session):
     def save_continue_scores():
 
         scores = build_scores_record()
+
+        if scores is None:
+            ui.notification_show(
+                "Please enter a score between 0 and 100 for all options and criteria.",
+                type="error",
+                duration=3
+            )
+            return
 
         scores_state.set(scores)                # save for use within the project
         print("Scores saved before continuing:", scores_state())    #test
@@ -2202,77 +2224,6 @@ def server(input, output, session):
 
 #------ Results summary --------------------------------------------------------------------------------------
 
-    @render.ui
-    def results_summary():
-
-        results = get_results()
-
-        if not results:
-
-            return ui.p(
-                "No results available."
-            )
-
-        # STAR-MCDA
-        if decision_type_state() == "STAR - MCDA":
-
-            results = calculate_star_results(
-                results,
-                costs_state()
-            )
-
-            top_option = results[0]
-
-            return ui.div(
-
-                ui.h4(
-                    ui.strong(
-                        "Best Value for Money"
-                    )
-                ),
-
-                ui.p(
-                    top_option["option"]
-                ),
-
-                ui.p(
-                    f"Benefit Score: "
-                    f"{top_option['benefit_score']:.2f}"
-                ),
-
-                ui.p(
-                    f"Total Cost: "
-                    f"£{top_option['cost']:,.2f}"
-                ),
-
-                ui.p(
-                    f"VFM Ratio: "
-                    f"£{top_option['vfm_ratio']:,.2f} "
-                    f"per benefit point"
-                )
-            )
-
-        # MCDA
-        top_option = results[0]
-
-        return ui.div(
-
-            ui.h4(
-                ui.strong(
-                    "Most Preferred Option"
-                )
-            ),
-
-            ui.p(
-                top_option["option"]
-            ),
-
-            ui.p(
-                f"Benefit Score: "
-                f"{top_option['benefit_score']:.2f}"
-            )
-        )
-
 #------ Decision Matrix on Results page--------------------------------------------------------------------------------------
 # ------ Decision Matrix ----------------------------------------------------------------------
 
@@ -2313,11 +2264,13 @@ def server(input, output, session):
         # Common: Option + criteria + Benefit Score + Rank
         number_of_columns = len(criteria_names) + 3
 
-        # STAR-MCDA adds Cost + VFM Ratio
+
+        # STAR-MCDA adds Total Benefit + Total Cost + VFM Ratio
         if is_star_mcda:
-            number_of_columns += 2
+            number_of_columns += 3
 
         matrix_rows = []
+
 
         #-------------Header row---------------
         header_cells = [
@@ -2334,13 +2287,6 @@ def server(input, output, session):
             ]
         ]
 
-        #----------STAR-MCDA only-------------
-
-        if is_star_mcda:
-            header_cells.append(
-                ui.div(ui.strong("Costs"))
-            )
-
         # Common column
         header_cells.append(
             ui.div(
@@ -2348,9 +2294,21 @@ def server(input, output, session):
             )
         )
 
+        #----------STAR-MCDA only-------------
+
+        if is_star_mcda:
+            header_cells.append(
+                ui.div(ui.strong("Total Benefit"))
+            )
+
+        if is_star_mcda:
+            header_cells.append(
+                ui.div(ui.strong("Total Cost"))
+            )
+
         # STAR-MCDA only
         if is_star_mcda: header_cells.append(
-                ui.div(ui.strong("VFM Ratio"))
+                ui.div(ui.strong("VFM Ratio (£ per benefit)"))
             )
 
         # Common column
@@ -2397,16 +2355,22 @@ def server(input, output, session):
                 ]
             ]
 
-            # STAR-MCDA only: Cost
-            if is_star_mcda:
-                row_cells.append(
-                    ui.div(f"£{result['cost']:,.2f}")
-                )
-
             # Common: Benefit Score
             row_cells.append(
                 ui.div(f"{result['benefit_score']:.2f}")
             )
+
+            # STAR-MCDA only: Total Benefit
+            if is_star_mcda:
+                row_cells.append(
+                    ui.div(f"£{result['total_benefit']:,.2f}")
+                )
+
+            # STAR-MCDA only: Total Cost
+            if is_star_mcda:
+                row_cells.append(
+                    ui.div(f"£{result['cost']:,.2f}")
+                )
 
             # STAR-MCDA only: VFM Ratio
             if is_star_mcda:
@@ -2449,8 +2413,10 @@ def server(input, output, session):
             return ui.p(
                 "Each coloured area represents an intervention. "
                 "Interventions are ordered by value for money and plotted "
-                "cumulatively by cost and benefit. Interventions with a lower cost per unit "
-                "of benefit indicates better value for money."
+                "cumulatively by total cost and total benefit. Total benefit is calculated by "
+                "multiplying the Benefit Score by the number of people receiving the "
+                "intervention. A lower cost per unit of total benefit indicates better "
+                "value for money."
             )
 
         # MCDA

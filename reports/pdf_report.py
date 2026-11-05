@@ -639,15 +639,6 @@ def generate_pdf_report(
             for criterion in result_criteria
         )
 
-        # STAR-MCDA: Cost column
-        if is_star_mcda:
-            results_header.append(
-                Paragraph(
-                    "<b>Costs</b>",
-                    table_header_style
-                )
-            )
-
         # Common Benefit Score
         results_header.append(
             Paragraph(
@@ -656,11 +647,31 @@ def generate_pdf_report(
             )
         )
 
+        # STAR-MCDA: Total Benefit column
+        if is_star_mcda:
+            results_header.append(
+                Paragraph(
+                    "<b>Total Benefit</b>",
+                    table_header_style
+                )
+            )
+
+        # STAR-MCDA: Total Cost column
+        if is_star_mcda:
+            results_header.append(
+                Paragraph(
+                    "<b>Total Cost</b>",
+                    table_header_style
+                )
+            )
+
+
+
         # STAR-MCDA: VFM Ratio
         if is_star_mcda:
             results_header.append(
                 Paragraph(
-                    "<b>VFM Ratio</b>",
+                    "<b>VFM Ratio (£ per benefit)</b>",
                     table_header_style
                 )
             )

@@ -13,6 +13,35 @@ options_page = ui.div(
           "usually lead to a more effective decision process."
           ),
 
+#----------------Key considerations----------------------------------------------------
+
+     ui.card(
+
+         ui.card_header("Key considerations"),
+
+         ui.tags.ul(
+
+             ui.tags.li(
+                 "Ensure all options align with the objectives of the decision."
+             ),
+
+             ui.tags.li(
+                 "Focus on options that decision-makers can realistically fund, implement or influence."
+             ),
+
+             ui.tags.li(
+                 "Keep the number of options manageable to support meaningful discussion and comparison."
+             ),
+
+            ui.tags.li(
+                 "Consider interventions across different settings in the patient pathway,  interdependencies between "
+                 "interventions and complementarities (e.g. bundling interventions into different care packages according to patient need.)"
+             )
+         ),
+            class_="page-card"
+     ),
+
+
 #----------------Add option section-----------------------------------------------------------------------
      ui.card(
 
@@ -56,28 +85,6 @@ options_page = ui.div(
         class_="page-card"
      ),
 
-#----------------Key considerations----------------------------------------------------
-
-     ui.card(
-
-         ui.card_header("Key considerations"),
-
-         ui.tags.ul(
-
-             ui.tags.li(
-                 "Ensure all options align with the objectives of the decision."
-             ),
-
-             ui.tags.li(
-                 "Focus on options that decision-makers can realistically fund, implement or influence."
-             ),
-
-             ui.tags.li(
-                 "Keep the number of options manageable to support meaningful discussion and comparison."
-             )
-         ),
-            class_="page-card"
-     ),
 
 #--------------------Page navigation---------------------------------------------------------
 

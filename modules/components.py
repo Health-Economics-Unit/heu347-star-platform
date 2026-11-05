@@ -135,7 +135,6 @@ def page_navigation(
     left_section = []
 
     if previous_button_id:
-
         left_section.append(
             ui.input_action_button(
                 previous_button_id,
@@ -145,45 +144,182 @@ def page_navigation(
 
     return ui.div(
 
-        ui.div(
-            *left_section
-        ),
-
-        ui.div(
-
-            ui.input_action_button(
-                save_button_id,
-                "💾 Save",                       #save button
-                class_="btn-outline-primary",
+        # ---------------- Saving progress note ----------------
+        ui.card(
+            ui.card_header(
+                "⚠️ Saving your progress"
             ),
 
-            ui.download_button(
-                download_button_id,
-                "📥 Export Project",
-                class_ = "btn-outline-primary"
+            ui.p(
+                "Your work is retained while your session remains active. "
+                "To keep your progress, use Export Project to download a copy of your project. "
+                "When you return, use Load Project to upload the file and "
+                "continue where you left off."
             ),
 
-
-            ui.input_action_button(
-                continue_button_id,
-                "Save & Continue →",            #save & continue button
-                class_="btn-primary",
-            ),
+            class_="note-text",
 
             style="""
-                display:flex;
-                gap:10px;
+                width:100%;
+                margin-bottom:15px;
             """
         ),
 
+        # ---------------- Navigation buttons row ----------------
+        ui.div(
+
+            # Previous button
+            ui.div(
+                *left_section
+            ),
+
+            # Save / Export / Continue
+            ui.div(
+
+                ui.input_action_button(
+                    save_button_id,
+                    "💾 Save",
+                    class_="btn-outline-primary",
+                ),
+
+                ui.download_button(
+                    download_button_id,
+                    "📥 Export Project",
+                    class_="btn-outline-primary"
+                ),
+
+                ui.input_action_button(
+                    continue_button_id,
+                    "Continue →",
+                    class_="btn-primary",
+                ),
+
+                style="""
+                    display:flex;
+                    gap:10px;
+                """
+            ),
+
+            # Style for the BUTTON ROW
+            style="""
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                width:100%;
+            """
+        ),
+
+        # Style for the WHOLE navigation area
         style="""
             display:flex;
-            justify-content:space-between;
-            align-items:center;
+            flex-direction:column;
+            width:100%;
             margin-top:20px;
             margin-bottom:20px;
         """
     )
+
+# def page_navigation(
+#     save_button_id,
+#     continue_button_id,
+#     download_button_id,
+#     previous_button_id=None,
+#     previous_label=None
+# ):
+#
+#     left_section = []
+#
+#     if previous_button_id:
+#
+#         left_section.append(
+#             ui.input_action_button(
+#                 previous_button_id,
+#                 f"← {previous_label}"
+#             )
+#         )
+#
+#     return ui.div(
+#
+#         # ---------------- Saving progress note ----------------
+#
+#         ui.card(
+#             ui.card_header(
+#                 "⚠️ Saving your progress"
+#             ),
+#
+#             ui.p(
+#                 "Your work is retained while your session remains active. "
+#                 "To keep your progress, use Export Project to download a copy of your project. "
+#                 "When you return, use Load Project to upload the file and "
+#                 "continue where you left off."
+#             ),
+#
+#             class_="note-text",
+#
+#             style="""
+#                 width:100%;
+#                 margin-bottom:15px;
+#             """
+#         ),
+#
+#         # ---------------- Navigation buttons ----------------
+#
+#         ui.div(
+#             *left_section
+#         ),
+#
+#         ui.div(
+#
+#             ui.input_action_button(
+#                 save_button_id,
+#                 "💾 Save",                       #save button
+#                 class_="btn-outline-primary",
+#             ),
+#
+#             ui.download_button(
+#                 download_button_id,
+#                 "📥 Export Project",
+#                 class_ = "btn-outline-primary"
+#             ),
+#
+#
+#             ui.input_action_button(
+#                 continue_button_id,
+#                 "Continue →",            #save & continue button
+#                 class_="btn-primary",
+#             ),
+#
+#             style="""
+#                 display:flex;
+#                 gap:10px;
+#             """
+#         ),
+#
+#         style="""
+#                 display:flex;
+#                 justify-content:space-between;
+#                 align-items:center;
+#                 width:100%;
+#             """
+#     ),
+#
+#     style = """
+#         display:flex;
+#         flex-direction:column;
+#         width:100%;
+#         margin-top:20px;
+#         margin-bottom:20px;
+#     """
+# )
+
+    #     style="""
+    #         display:flex;
+    #         justify-content:space-between;
+    #         align-items:center;
+    #         margin-top:20px;
+    #         margin-bottom:20px;
+    #     """
+    # )
 #-------------------------reusable cards for results page-----------------------------------------------
 
 def results_nav_card(card_id, icon, title):

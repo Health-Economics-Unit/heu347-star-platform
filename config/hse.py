@@ -43,9 +43,6 @@ example_title = "Placeholder: Example scenario that will load by default to help
 note_text = ("ℹ️ Note: Complete the stages below in sequence, as each stage builds on the information "
              "collected in the previous step.")
 
-
-
-
 #---------------------------------------------------------------------------------------------------------------------
 #-------------------------Project specific pages----------------------------------------------------------------------
 
@@ -87,11 +84,11 @@ default_criteria = [
         "name": "Health Benefits",
         "icon": "❤️"
     },
-    {
-        "id": "health_inequalities",
-        "name": "Impact on Health Inequalities",
-        "icon": "⚖️"
-    },
+    # {
+    #     "id": "health_inequalities",
+    #     "name": "Impact on Health Inequalities",
+    #     "icon": "⚖️"
+    # },
     {
         "id": "safety",
         "name": "Safety",

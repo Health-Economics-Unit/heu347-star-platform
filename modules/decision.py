@@ -29,7 +29,7 @@ decision_page = ui.div(
                 "decision_title",
                 "Decision title ",
                 rows=6,
-                placeholder="Resource Allocation or Priority Setting"
+                placeholder="Enter decision title"
             ),
 
             ui.input_text_area(
@@ -37,8 +37,8 @@ decision_page = ui.div(
                 "Decision description/objectives *",
                 rows=6,
                 placeholder=(
-                    "Describe the decision that needs to be made and the objectives it should achieve. "
-                    "For example, allocating resources across services or prioritising investment options."
+                    "Describe the decision to be made, its objectives, and the patient population who will receive or be affected by the interventions being considered. "
+                    "For example, deciding how to allocate resources across interventions for people with diabetes."
                 )
 
             ),
@@ -84,8 +84,6 @@ decision_page = ui.div(
 
         class_="page-card"
     ),
-
-    ui.br(),
 
 #----------------------Decision page navigation---------------------------------------------------------
 

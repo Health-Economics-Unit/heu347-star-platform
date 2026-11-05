@@ -145,7 +145,6 @@ def create_efficiency_frontier(
 
     fig = go.Figure()
 
-
     # No results
 
     if not frontier_results:
@@ -184,7 +183,6 @@ def create_efficiency_frontier(
 
 
     # Filled intervention triangles
-
     for index, result in enumerate(frontier_results):
 
         start_cost = result["start_cost"]
@@ -196,14 +194,6 @@ def create_efficiency_frontier(
         colour = chart_colours[
             index % len(chart_colours)
         ]
-
-        hover_text = (
-            f"<b>{result['option']}</b><br>"
-            f"Total Cost: £{result['cost']:,.2f}<br>"
-            f"Benefit Score: {result['benefit_score']:.2f}<br>"
-            f"VFM Ratio: {result['vfm_ratio']:.2f} per benefit<br>"
-            f"VFM Rank: {result['rank']}"
-        )
 
         fig.add_trace(
             go.Scatter(
@@ -237,26 +227,38 @@ def create_efficiency_frontier(
 
                 name=result["option"],
 
-                text=[
-                    hover_text,
-                    hover_text,
-                    hover_text,
-                    hover_text,
-                    hover_text
-                ],
+                customdata=[
+                               [
+                                   result["people_receiving"],
+                                   result["benefit_score"],
+                                   result["total_benefit"],
+                                   result["cost"],
+                                   result["vfm_ratio"],
+                                   result["rank"]
+                               ]
+                           ] * 5,
 
                 hovertemplate=(
-                    "%{text}"
-                    "<extra></extra>"
+                        "<b>" + result["option"] + "</b><br>"
+                                                   "People receiving intervention: %{customdata[0]:,.0f}<br>"
+                                                   "Benefit Score: %{customdata[1]:.2f}<br>"
+                                                   "Total Benefit: %{customdata[2]:,.2f}<br>"
+                                                   "Total Cost: £%{customdata[3]:,.2f}<br>"
+                                                   "VFM Ratio: £%{customdata[4]:,.2f} per benefit unit<br>"
+                                                   "VFM Rank: %{customdata[5]}"
+                                                   "<extra></extra>"
                 ),
 
                 # Makes the filled area the hover target
-                hoveron="fills"
+                hoveron="fills+points",
+
+                hoverlabel=dict(
+                    namelength=0)
             )
         )
 
-    # Layout
 
+    # Layout
     fig.update_layout(
 
         # title=dict(
@@ -288,7 +290,7 @@ def create_efficiency_frontier(
         ),
 
         yaxis=dict(
-            title="Cumulative Benefit Score",
+            title="Cumulative Total Benefit",
 
             rangemode="tozero",
 

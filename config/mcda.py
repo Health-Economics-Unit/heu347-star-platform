@@ -103,23 +103,6 @@ default_criteria = [
 
 #--------------------------------Project Aesthetics------------------------------------------------------------------
 #------------------------Color palette-------------------------------------------------------------------------------
-# HEU Palette:
-
-# ColourBest outcome / lowest risk	            #24B1A8 (teal)
-# Medium-low	                                #59C0E9 (light blue)
-# Medium	                                    #4085C4 (blue)
-# Medium-high	                                #213B7D (dark blue)
-# Missing / Not applicable	                    #EAEBEB (light grey)
-
-
-# NHS palette:
-
-# NHS Dark Blue                               #003087
-# NHS Blue                                    #005EB8
-# NHS Bright Blue                             #0072CE       used this color
-# NHS Light Blue                              #41B6E6
-# NHS Aqua Blue                               #00A9CE
-
 
 palette = {
     "primary":      "#213B7D",          #main - use for banner, navigation active state, primary buttons, cards and charts

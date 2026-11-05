@@ -19,8 +19,11 @@ criteria_page = ui.div(
          "not be included as a criterion as they are considered separately within "
          "the prioritisation process."
      ),
-    ui.h6(ui.strong("ℹ️ Note: The criteria below are examples only and are not exhaustive. "
-                    "Please select or add criteria that are relevant to your decision"),
+    ui.h6(ui.strong("ℹ️ Note: In this tool, we focus on criteria relating to patient-level impacts, e.g. health benefits, "
+                    "quality of life, experience. System-level impacts, such as health inequalities and "
+                    "environmental sustainability, will be discussed deliberatively in the prioritisation "
+                    "stage. The criteria below are examples only and are not exhaustive. "
+                    "Please select or add criteria that are relevant to your decision. "),
                     class_="note-text"),
 
     ui.br(),
