@@ -9,7 +9,7 @@ from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import mm
-from reportlab.platypus import (SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle, Image, KeepTogether)
+from reportlab.platypus import (SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle, Image)
 from matplotlib.ticker import FuncFormatter
 
 def generate_pdf_report(
@@ -516,95 +516,6 @@ def generate_pdf_report(
     story.append(scores_table)
     story.append(PageBreak())
 
-    # #------------------------------------------------------------------------------------------------------
-    # # 6. Decision matrix ----------------------------------------------------------------------------------------------
-    # #------------------------------------------------------------------------------------------------------
-    #
-    # story.append(
-    #     Paragraph(
-    #         "6. Decision Matrix",
-    #         heading_style
-    #     )
-    # )
-    #
-    # if results:
-    #
-    #     result_criteria = list(
-    #         results[0]["weighted_scores"].keys()
-    #     )
-    #
-    #     results_header = [
-    #         Paragraph("<b>Option</b>", table_header_style)
-    #     ]
-    #
-    #     results_header.extend(
-    #         Paragraph(
-    #             f"<b>{criterion}</b>",
-    #             table_header_style
-    #         )
-    #         for criterion in result_criteria
-    #     )
-    #
-    #     results_header.extend(
-    #         [
-    #             Paragraph("<b>Benefit score</b>", table_header_style),
-    #             Paragraph("<b>Rank</b>", table_header_style)
-    #         ]
-    #     )
-    #
-    #     results_data = [results_header]
-    #
-    #     for result in results:
-    #
-    #         result_row = [
-    #             Paragraph(
-    #                 str(result["option"]),
-    #                 body_style
-    #             )
-    #         ]
-    #
-    #         result_row.extend(
-    #             f"{result['weighted_scores'].get(criterion, 0):.2f}"
-    #             for criterion in result_criteria
-    #         )
-    #
-    #         result_row.extend(
-    #             [
-    #                 f"{result['benefit_score']:.2f}",
-    #                 str(result["rank"])
-    #             ]
-    #         )
-    #
-    #         results_data.append(result_row)
-    #
-    #     total_result_columns = (
-    #         len(result_criteria) + 3
-    #     )
-    #
-    #     results_table = Table(
-    #         results_data,
-    #         colWidths=[
-    #             47 * mm
-    #         ] + [
-    #             190 * mm / max(
-    #                 total_result_columns - 1,
-    #                 1
-    #             )
-    #             for _ in range(
-    #                 total_result_columns - 1
-    #             )
-    #         ],
-    #         repeatRows=1
-    #     )
-    #
-    #     apply_standard_table_style(
-    #         results_table,
-    #         project_colour
-    #     )
-    #
-    #     story.append(results_table)
-    #     story.append(Spacer(1, 8 * mm))
-
     # ------------------------------------------------------------------------------------------------------
     # 6. Decision Matrix
     # ------------------------------------------------------------------------------------------------------
@@ -619,7 +530,9 @@ def generate_pdf_report(
     if results:
 
         result_criteria = list(
-            results[0]["weighted_scores"].keys()
+            results[0]
+            .get("weighted_scores", {})
+            .keys()
         )
 
         # ---------------- Header ----------------
@@ -639,16 +552,15 @@ def generate_pdf_report(
             for criterion in result_criteria
         )
 
-        # Common Benefit Score
         results_header.append(
             Paragraph(
-                "<b>Benefit score</b>",
+                "<b>Benefit Score</b>",
                 table_header_style
             )
         )
 
-        # STAR-MCDA: Total Benefit column
         if is_star_mcda:
+
             results_header.append(
                 Paragraph(
                     "<b>Total Benefit</b>",
@@ -656,8 +568,6 @@ def generate_pdf_report(
                 )
             )
 
-        # STAR-MCDA: Total Cost column
-        if is_star_mcda:
             results_header.append(
                 Paragraph(
                     "<b>Total Cost</b>",
@@ -665,10 +575,6 @@ def generate_pdf_report(
                 )
             )
 
-
-
-        # STAR-MCDA: VFM Ratio
-        if is_star_mcda:
             results_header.append(
                 Paragraph(
                     "<b>VFM Ratio (£ per benefit)</b>",
@@ -676,7 +582,6 @@ def generate_pdf_report(
                 )
             )
 
-        # Common Rank
         results_header.append(
             Paragraph(
                 "<b>Rank</b>",
@@ -684,9 +589,7 @@ def generate_pdf_report(
             )
         )
 
-        results_data = [
-            results_header
-        ]
+        results_data = [results_header]
 
         # ---------------- Rows ----------------
 
@@ -694,72 +597,82 @@ def generate_pdf_report(
 
             result_row = [
                 Paragraph(
-                    str(result["option"]),
+                    str(result.get("option", "")),
                     body_style
                 )
             ]
 
+            # Weighted criterion values
             result_row.extend(
-                f"{result['weighted_scores'].get(criterion, 0):.2f}"
+                f"{float(result.get('weighted_scores', {}).get(criterion, 0) or 0):.2f}"
                 for criterion in result_criteria
             )
 
-            # STAR-MCDA: Cost
+            # Benefit Score
+            result_row.append(
+                f"{float(result.get('benefit_score', 0) or 0):.2f}"
+            )
+
             if is_star_mcda:
+
+                # Total Benefit
                 result_row.append(
-                    f"£{result.get('cost', 0):,.2f}"
+                    f"£{float(result.get('total_benefit', 0) or 0):,.2f}"
                 )
 
-            # Common Benefit Score
-            result_row.append(
-                f"{result['benefit_score']:.2f}"
-            )
-
-            # STAR-MCDA: VFM Ratio
-            if is_star_mcda:
+                # Total Cost
                 result_row.append(
-                    f"£{result.get('vfm_ratio', 0):,.2f}"
+                    f"£{float(result.get('cost', 0) or 0):,.2f}"
                 )
 
-            # Common Rank
+                # VFM Ratio
+                vfm_ratio = result.get("vfm_ratio")
+
+                try:
+                    numeric_vfm = float(vfm_ratio)
+                    valid_vfm = np.isfinite(numeric_vfm)
+                except (TypeError, ValueError):
+                    numeric_vfm = None
+                    valid_vfm = False
+
+                if valid_vfm:
+                    result_row.append(
+                        f"£{numeric_vfm:,.2f}"
+                    )
+                else:
+                    result_row.append(
+                        "Worst VFM"
+                    )
+
+            # Rank
             result_row.append(
-                str(result["rank"])
+                str(result.get("rank", ""))
             )
 
-            results_data.append(
-                result_row
-            )
+            results_data.append(result_row)
 
-        # Number of columns
-        total_result_columns = (
-                len(result_criteria) + 3
-        )
+        # Always derive the column count from the actual header
+        total_result_columns = len(results_header)
 
-        # STAR adds Cost + VFM Ratio
-        if is_star_mcda:
-            total_result_columns += 2
-
-        # Keep the first Option column slightly wider
-        remaining_width = 198 * mm
+        # Full usable table width: 245 mm
+        option_column_width = 42 * mm
+        remaining_width = 203 * mm
 
         other_column_width = (
-                remaining_width
-                / max(total_result_columns - 1, 1)
+            remaining_width
+            / max(total_result_columns - 1, 1)
         )
 
         results_table = Table(
             results_data,
-
             colWidths=[
-                          47 * mm
-                      ] + [
-                          other_column_width
-                          for _ in range(
-                    total_result_columns - 1
-                )
-                      ],
-
-            repeatRows=1
+                option_column_width
+            ] + [
+                other_column_width
+                for _ in range(total_result_columns - 1)
+            ],
+            repeatRows=1,
+            hAlign="LEFT"
         )
 
         apply_standard_table_style(
@@ -767,80 +680,33 @@ def generate_pdf_report(
             project_colour
         )
 
-        story.append(
-            results_table
-        )
+        # Keep the heading and table near each other where possible
+        story.append(results_table)
+        story.append(Spacer(1, 8 * mm))
+
+    else:
 
         story.append(
-            Spacer(1, 8 * mm)
-        )
-
-        #------------------------------------------------------------------------------------------------------
-        # 7. Preferred option----------------------------------------------------------------------------------
-        #------------------------------------------------------------------------------------------------------
-
-        top_option = results[0]
-
-        # STAR-MCDA
-        if is_star_mcda:
-
-            preferred_title = (
-                "7. Best Value for Money"
-            )
-
-            preferred_text = (
-                f"<b>{top_option['option']}</b><br/>"
-                f"Benefit score: "
-                f"{top_option['benefit_score']:.2f}<br/>"
-                f"Total cost: "
-                f"£{top_option['cost']:,.2f}<br/>"
-                f"VFM Ratio: "
-                f"£{top_option['vfm_ratio']:,.2f} "
-                f"per benefit point"
-            )
-
-        # MCDA
-        else:
-
-            preferred_title = (
-                "7. Most Preferred Option"
-            )
-
-            preferred_text = (
-                f"<b>{top_option['option']}</b><br/>"
-                f"Benefit score: "
-                f"{top_option['benefit_score']:.2f}"
-            )
-
-        story.append(
-            KeepTogether(
-                [
-                    Paragraph(
-                        preferred_title,
-                        heading_style
-                    ),
-
-                    Paragraph(
-                        preferred_text,
-                        note_style
-                    )
-                ]
+            Paragraph(
+                "No calculated results were available.",
+                body_style
             )
         )
 
-        story.append(PageBreak())
+    story.append(PageBreak())
 
-        # ------------------------------------------------------------------------------------------------------
-        # 8. Visualisation
-        # ------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------
+    # 7. Visualisation
+    # ------------------------------------------------------------------------------------------------------
+
+    if results:
 
         # STAR-MCDA
         if is_star_mcda:
 
             story.append(
                 Paragraph(
-                    "8. Visualisation",
-                    #"8. Efficiency Frontier ",
+                    "7. Visualisation",
                     heading_style
                 )
             )
@@ -848,9 +714,12 @@ def generate_pdf_report(
             story.append(
                 Paragraph(
                     (
+                        "Each coloured area represents an intervention. "
                         "Interventions are ordered by value for money and plotted "
-                        "cumulatively by cost and benefit. Interventions with a lower "
-                        "cost per unit of benefit indicate better value for money."
+                        "cumulatively by total cost and total benefit. The width of "
+                        "each area represents total cost, while its height represents "
+                        "total benefit. Interventions with a lower cost per unit of "
+                        "benefit indicate better value for money."
                     ),
                     body_style
                 )
@@ -872,14 +741,12 @@ def generate_pdf_report(
 
             story.append(frontier_image)
 
-
         # MCDA
         else:
 
             story.append(
                 Paragraph(
-                    "8. Visualisation",
-                    #"8. Contribution of Criteria to Overall Benefit Score",
+                    "7. Visualisation",
                     heading_style
                 )
             )
@@ -899,15 +766,6 @@ def generate_pdf_report(
             chart_image.hAlign = "CENTER"
 
             story.append(chart_image)
-
-    else:
-
-        story.append(
-            Paragraph(
-                "No calculated results were available.",
-                body_style
-            )
-        )
 
     #------------------------------------------------------------------------------------------------------
     # Generate PDF----------------------------------------------------------------------------------------
@@ -1138,6 +996,7 @@ def create_efficiency_frontier_chart(
     chart_buffer = BytesIO()
 
     if not results:
+
         fig, ax = plt.subplots(
             figsize=(12, 5.5)
         )
@@ -1161,41 +1020,70 @@ def create_efficiency_frontier_chart(
         )
 
         plt.close(fig)
-
         chart_buffer.seek(0)
 
         return chart_buffer
 
-    cumulative_cost = 0
-    cumulative_benefit = 0
+    def get_vfm_sort_value(result):
 
-    # frontier_x = [0]
-    # frontier_y = [0]
+        vfm_ratio = result.get("vfm_ratio")
+
+        try:
+            numeric_vfm = float(vfm_ratio)
+        except (TypeError, ValueError):
+            return float("inf")
+
+        if not np.isfinite(numeric_vfm):
+            return float("inf")
+
+        return numeric_vfm
+
+    # Lowest cost per unit of benefit first.
+    # Missing or invalid VFM values appear last.
+    ordered_results = sorted(
+        results,
+        key=get_vfm_sort_value
+    )
+
+    cumulative_cost = 0.0
+    cumulative_benefit = 0.0
 
     fig, ax = plt.subplots(
         figsize=(12, 5.5)
     )
 
-    for index, result in enumerate(results):
+    for index, result in enumerate(ordered_results):
+
+        option_name = str(
+            result.get("option", "")
+        )
+
+        total_cost = float(
+            result.get("cost", 0) or 0
+        )
+
+        benefit_score = float(
+            result.get("benefit_score", 0) or 0
+        )
+
+        total_benefit = float(
+            result.get("total_benefit", 0) or 0
+        )
+
+        vfm_ratio = result.get("vfm_ratio")
 
         start_cost = cumulative_cost
         start_benefit = cumulative_benefit
 
-        cumulative_cost += result.get(
-            "cost",
-            0
-        )
-
-        cumulative_benefit += result.get(
-            "benefit_score",
-            0
-        )
+        cumulative_cost += total_cost
+        cumulative_benefit += total_benefit
 
         colour = chart_colours[
             index % len(chart_colours)
         ]
 
-        # Filled intervention area
+        # Base represents total cost.
+        # Height represents total benefit.
         ax.fill(
             [
                 start_cost,
@@ -1209,24 +1097,65 @@ def create_efficiency_frontier_chart(
             ],
             color=colour,
             alpha=0.8,
-            label=result["option"]
+            label=option_name
         )
 
-        # frontier_x.append(
-        #     cumulative_cost
-        # )
-        #
-        # frontier_y.append(
-        #     cumulative_benefit
-        # )
+        try:
+            numeric_vfm = float(vfm_ratio)
+            valid_vfm = np.isfinite(numeric_vfm)
+        except (TypeError, ValueError):
+            numeric_vfm = None
+            valid_vfm = False
 
-    # # Continuous frontier line
-    # ax.plot(
-    #     frontier_x,
-    #     frontier_y,
-    #     color="#333333",
-    #     linewidth=2
-    # )
+        if valid_vfm:
+            vfm_text = f"£{numeric_vfm:,.2f} per benefit"
+        else:
+            vfm_text = "Worst VFM"
+
+        # Position the label inside its intervention triangle.
+        label_x = start_cost + (total_cost * 0.68)
+        label_y = start_benefit + (total_benefit * 0.30)
+
+        option_label = (
+            f"{option_name}\n"
+            f"Total Cost: £{total_cost:,.2f}\n"
+            f"Benefit Score: {benefit_score:,.2f}\n"
+            f"Total Benefit: £{total_benefit:,.2f}\n"
+            f"VFM Ratio: {vfm_text}"
+        )
+
+        ax.text(
+            label_x,
+            label_y,
+            option_label,
+            ha="center",
+            va="center",
+            fontsize=7,
+            color="#1F1F1F",
+            bbox={
+                "boxstyle": "round,pad=0.25",
+                "facecolor": "white",
+                "edgecolor": colour,
+                "alpha": 0.9
+            }
+        )
+
+        # Make axes start exactly at zero, matching the app chart
+        ax.set_xlim(
+            left=0,
+            right=cumulative_cost * 1.05
+        )
+
+        ax.set_ylim(
+            bottom=0,
+            top=cumulative_benefit * 1.05
+        )
+
+        # Remove Matplotlib's automatic axis padding
+        ax.margins(
+            x=0,
+            y=0
+        )
 
     ax.set_title(
         "Efficiency Frontier",
@@ -1241,20 +1170,31 @@ def create_efficiency_frontier_chart(
     )
 
     ax.set_ylabel(
-        "Cumulative Benefit Score"
+        "Cumulative Total Benefit"
     )
 
     ax.xaxis.set_major_formatter(
         FuncFormatter(
-            lambda value, position:
-            f"£{value:,.0f}"
+            lambda value, position: f"£{value:,.0f}"
+        )
+    )
+
+    ax.yaxis.set_major_formatter(
+        FuncFormatter(
+            lambda value, position: f"{value:,.0f}"
         )
     )
 
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
 
-    ax.grid(False)
+    ax.grid(
+        axis="both",
+        linestyle="--",
+        alpha=0.2
+    )
+
+    ax.set_axisbelow(True)
 
     ax.legend(
         title="Interventions",
@@ -1273,7 +1213,6 @@ def create_efficiency_frontier_chart(
     )
 
     plt.close(fig)
-
     chart_buffer.seek(0)
 
     return chart_buffer
